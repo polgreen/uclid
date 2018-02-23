@@ -33,3 +33,13 @@ Markus/Sanjit: What is the simplest extension to hyperproperties we can have in 
 Pramod: We could try to implement something like the Ironclad/Dafny extension where we can refer to left(var) and right(var) in our post-conditions.
 
 Sanjit: Let us use a more principled approach in our specification language. We will start with 2-safety and then implement HyperLTL. The module instantiation should be useful for this.
+
+# Feb 23 Meeting Notes
+
+Pramod: How do we setup synthesis function postconditions? 
+
+Sanjit: Use synthesis functions in the code, or in invariant and we will autogenerate the conditions.
+
+Pramod: should we have a predicate for check state equality?
+
+

@@ -36,10 +36,16 @@ Sanjit: Let us use a more principled approach in our specification language. We 
 
 # Feb 23 Meeting Notes
 
+## Synthesis Functions
 Pramod: How do we setup synthesis function postconditions? 
 
 Sanjit: Use synthesis functions in the code, or in invariant and we will autogenerate the conditions.
 
+## LTL Liveness
 Pramod: should we have a predicate for check state equality?
 
+Sanjit: Skip this for now.
 
+## 219c Project on Modeling Speculation
+
+Sanjit's advice: have much clearer sequence of steps for the project, and clear division of labour. Need to have a model up quickly (2 weeks) to allow subsequent iteration.

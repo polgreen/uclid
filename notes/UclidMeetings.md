@@ -42,10 +42,31 @@ Pramod: How do we setup synthesis function postconditions?
 Sanjit: Use synthesis functions in the code, or in invariant and we will autogenerate the conditions.
 
 ## LTL Liveness
-Pramod: should we have a predicate for check state equality?
+Pramod: should we have a predicate for checking state equality?
 
 Sanjit: Skip this for now.
 
 ## 219c Project on Modeling Speculation
 
 Sanjit's advice: have much clearer sequence of steps for the project, and clear division of labour. Need to have a model up quickly (2 weeks) to allow subsequent iteration.
+
+# Mar 02 Meeting Notes
+
+## 219c Modeling Project
+
+Modeling of load queue: should we model a load queue?  Probably not, because we're not modeling TLBs, or cache miss latency. We can simulate the same effects by picking an appropriate out of order schedule. 
+
+Cache model
+ - model cache tags, cache associativity
+ - reuse TAP model
+
+Modeling reorder buffer
+ - Use the Smith and Sohi paper
+ - Model a register map, reorder buffer, and instruction selection
+
+## Concurrency in UCLID5
+
+  - can we have a scheduler process?
+  - how about next[atomic], next[interleaved]
+  - another option is that:
+    global instantiations of two modules should be in parallel

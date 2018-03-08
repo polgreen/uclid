@@ -70,3 +70,16 @@ Modeling reorder buffer
   - how about next[atomic], next[interleaved]
   - another option is that:
     global instantiations of two modules should be in parallel
+
+# Notes on CPU Model from Kevin
+
+The command line to run the model is:
+
+   uclid /home/pramod/research/enclaves/vectre/src/main.ucl /home/pramod/research/enclaves/vectre/src/cpu/cpu.ucl /home/pramod/research/enclaves/vectre/src/cpu/stages/issue.ucl /home/pramod/research/enclaves/vectre/src/cpu/stages/renamer.ucl /home/pramod/research/enclaves/vectre/src/cpu/stages/execute.ucl /home/pramod/research/enclaves/vectre/src/cpu/stages/write_result.ucl /home/pramod/research/enclaves/vectre/src/cpu/stages/commit.ucl /home/pramod/research/enclaves/vectre/src/cpu/buffers/reorder_buffer.ucl /home/pramod/research/enclaves/vectre/src/cpu/buffers/reservation_station.ucl /home/pramod/research/enclaves/vectre/src/cpu/datastructures/register_stat.ucl /home/pramod/research/enclaves/vectre/src/memory/cache.ucl /home/pramod/research/enclaves/vectre/src/utils/common.ucl
+
+This model blows up inside the call to exprToZ3. The top-level operation in the AST being computed upon is an equality between ``state_1_$inst:cpu1_var_$inst:issue_var_$inst:rob_unbound_output_ptind_out_15_36_31`` and some complex expression on the right hand side of the equality. Even attempting to print out this expression causes the Java runtime to run out of memory, so there is clearly some exponential blowup here. In fact, the problem is in just computing a hash of the expression (inside Scala code) -- this comes into the picture because we use a HashMap to memoize the results of exprToZ3. 
+
+Some of this can probably be solved using CSE, but we will need to introduce a let expression in SMTLanguage to make this work.
+
+Some other notes: if we add a counter to exprToZ3, then expression #51 when run on the above file is the one that causes the problem.
+

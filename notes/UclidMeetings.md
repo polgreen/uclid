@@ -83,3 +83,17 @@ Some of this can probably be solved using CSE, but we will need to introduce a l
 
 Some other notes: if we add a counter to exprToZ3, then expression #51 when run on the above file is the one that causes the problem.
 
+# Mar 09 Meeting Notes
+
+## Memoizing SMT Expressions to Z3 conversion
+
+1. We're overriding hashCode so that the hash value of each AST node is computed only once. This should hopefully solve the issue with Kevin's CPU model.
+1. Comment from Sanjit: Make sure to document the magic constants used in hashBaseId.
+
+## CPU Model
+
+1. Semantics of next; should we have primed variables?
+1. Code structure: have next(module), call (next\_v), v = next\_v.
+1. How does Z3 handle record types? The ROB is implemented as a set of arrays: should this be an array of records.
+1. How is the ready state of each instruction tracked? Look
+

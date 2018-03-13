@@ -97,3 +97,22 @@ Some other notes: if we add a counter to exprToZ3, then expression #51 when run 
 1. How does Z3 handle record types? The ROB is implemented as a set of arrays: should this be an array of records.
 1. How is the ready state of each instruction tracked? Look
 
+# Mar 13
+
+## Todo List from Meeting
+
+1. Implement primed variables.
+1. Implement change from :: and -> to '.' operators.
+1. Implement constant declarations with literals associated with them.
+1. Constant declarations and type declarations that can exist outside a module.
+1. While loops.
+1. Synthesis.
+1. Check if the LTL property contains only G, X after conversion to NNF; If so don't generate the liveness proof obligations.  
+
+## Comments
+
+1. Investigate profiling infrastructure.
+1. Why do we have both RuntimeError and AssertionError? We should only have one.
+1. Try Boolector as another backend solver.
+1. Create individual publish.sh files for each folder. Don't publish tutorial sources.
+1. Document CoverDecorator.

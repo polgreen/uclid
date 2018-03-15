@@ -116,3 +116,7 @@ Some other notes: if we add a counter to exprToZ3, then expression #51 when run 
 1. Try Boolector as another backend solver.
 1. Create individual publish.sh files for each folder. Don't publish tutorial sources.
 1. Document CoverDecorator.
+
+Further TODOs
+1. More informative names for counterexamples to induction.
+1. Need to check that primed variables are not present in module-level invariants and properties.

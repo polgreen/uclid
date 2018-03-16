@@ -120,3 +120,5 @@ Some other notes: if we add a counter to exprToZ3, then expression #51 when run 
 Further TODOs
 1. More informative names for counterexamples to induction.
 1. Need to check that primed variables are not present in module-level invariants and properties.
+1. Need to check there is only effective assignment to a primed variable in the init/next blocks.
+1. We should not have error messages using single quotes in places where primed variables can occur.

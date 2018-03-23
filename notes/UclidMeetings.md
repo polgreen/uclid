@@ -122,3 +122,18 @@ Further TODOs
 1. Need to check that primed variables are not present in module-level invariants and properties.
 1. Need to check there is only effective assignment to a primed variable in the init/next blocks.
 1. We should not have error messages using single quotes in places where primed variables can occur.
+
+# March 23
+
+- Discussion of primed variable changes to uclid5.
+- [Pramod TODO]: Need to double check RHS use of primed variables in procedures.
+- [Pramod TODO]: Disallow next statements inside procedures.
+- [Pramod TODO]: assert/assume in the control block?
+
+## Vectre Notes
+
+- [Kevin/Cameron] Fix branch_level decrement after mis-speculation.
+- [Kevin/Cameron] Remove next from inside procedures.
+- cpu_common::inst2ldtime(inst) == 2
+
+

@@ -126,14 +126,13 @@ Further TODOs
 # March 23
 
 - Discussion of primed variable changes to uclid5.
-- [Pramod TODO]: Need to double check RHS use of primed variables in procedures.
-- [Pramod TODO]: Disallow next statements inside procedures.
+- [Pramod TODO]: Need to double check RHS use of primed variables in procedures. [done]
+- [Pramod TODO]: Disallow next statements inside procedures. [done]
 - [Pramod TODO]: assert/assume in the control block?
 
 ## Vectre Notes
 
 - [Kevin/Cameron] Fix branch_level decrement after mis-speculation.
 - [Kevin/Cameron] Remove next from inside procedures.
-- cpu_common::inst2ldtime(inst) == 2
 
 

@@ -101,8 +101,8 @@ Some other notes: if we add a counter to exprToZ3, then expression #51 when run 
 
 ## Todo List from Meeting
 
-1. Implement primed variables.
-1. Implement change from :: and -> to '.' operators.
+1. Implement primed variables. [done]
+1. Implement change from :: and -> to '.' operators. [done]
 1. Implement constant declarations with literals associated with them.
 1. Constant declarations and type declarations that can exist outside a module.
 1. While loops.

@@ -103,10 +103,12 @@ Some other notes: if we add a counter to exprToZ3, then expression #51 when run 
 
 1. Implement primed variables. [done]
 1. Implement change from :: and -> to '.' operators. [done]
-1. Implement constant declarations with literals associated with them.
+1. Implement constant declarations with literals associated with them. [done]
 1. Constant declarations and type declarations that can exist outside a module.
 1. While loops.
 1. Synthesis.
+1. Scripting language improvements.
+1. Hyper-properties.
 1. Check if the LTL property contains only G, X after conversion to NNF; If so don't generate the liveness proof obligations.  
 
 ## Comments

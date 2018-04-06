@@ -137,4 +137,8 @@ Further TODOs
 - [Kevin/Cameron] Fix branch_level decrement after mis-speculation.
 - [Kevin/Cameron] Remove next from inside procedures.
 
+# April 06
 
+- [uclid5 TODO] Consider adding distinct operator.
+- [uclid5 TODO] Boogie's option to sprinkle assume false thoughout the model.
+- Add uninterpreted cache tags

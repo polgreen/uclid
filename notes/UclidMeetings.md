@@ -142,3 +142,36 @@ Further TODOs
 - [uclid5 TODO] Consider adding distinct operator.
 - [uclid5 TODO] Boogie's option to sprinkle assume false thoughout the model.
 - Add uninterpreted cache tags
+
+# April 12 [Meeting with Alan]
+
+Topic: ABC as a backend for UCLID5
+ABC can take word-level input
++ verilog file
++ internal buffer format (NDR)
+  * internal word-level aiger format 
+  * design should be flat
+  * no support for memories
+  * sequentials are conditionally supported
+  * are memories are small (< 1000 flops)
+    > yes? just blast the memory as bit-level flops
+    > no? convert to a memory with the ABC memory interface
+  * alan is developing a memory abstraction package
+    > which will support "memory semantics"
+    > cegar based approach for memory.
+    > relevant: fmcad 2012 -- small, short world paper
+  * documentation on constructing a buffer
+    > kinda like extended
+    > create a big array and fill it up with inputs, outputs, etc.
+    > and pass this into ABC
+    > operators
+      - similar to verific
+      - more than a 100 operators are supported
+      - can add operators easily
+    > not yet supporting memories, but will need to extend this format
+  * ndr.h: https://github.com/berkeley-abc/abc/blob/master/src/aig/miniaig/ndr.h
+    > every node has a unique id
+    > fanins are identified by unique ids
+    > NDR can't take a slice of an input signal as an input to an adder
+    > we would have to output a new node that creates the slice, new node for concat etc.
+    > every node must have a single output

@@ -134,7 +134,7 @@ Further TODOs
 
 ## Vectre Notes
 
-- [Kevin/Cameron] Fix branch_level decrement after mis-speculation.
+- [Kevin/Cameron] Fix branch\_level decrement after mis-speculation.
 - [Kevin/Cameron] Remove next from inside procedures.
 
 # April 06
@@ -175,3 +175,16 @@ ABC can take word-level input
     > NDR can't take a slice of an input signal as an input to an adder
     > we would have to output a new node that creates the slice, new node for concat etc.
     > every node must have a single output
+
+# April 13
+
+## Vectre Model
+
+- Use constant literals for ROB size, number of phyiscal registers etc.
+- Update instruction "picking" to use uninterpreted functions, rather than having assumes
+- Remove the use of integers in speculation levels
+
+## UCLID5 Notes
+
+- Debug where Z3 is spending time
+- [much later] consider adding a boogie backend to UCLID5

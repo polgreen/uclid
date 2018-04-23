@@ -188,3 +188,23 @@ ABC can take word-level input
 
 - Debug where Z3 is spending time
 - [much later] consider adding a boogie backend to UCLID5
+
+# April 23
+
+## ABC Word-Level Integration
+
+1. Need CEX translation.
+2. CEX format
+   - array of bits ordered by time
+   - to get values: can also simulate using ABC.
+3. Every operator has only one output.
+4. But sub-modules can have multiple outputs
+5. Alan will add a new way of specifying flip-flops.
+   - ABC_OPER_DFF
+   - two inputs to a flop
+   - data input and initial state input
+6. Some of the outputs can be designated as "constraints"
+   - Property outputs go first
+   - Constraint outputs always go last
+   - Have to specify the number of constraint outputs
+   - The property checked is: Globally(cnst1 && cnst2 && ...) ==> Globally(prop1 && prop2 && .. )

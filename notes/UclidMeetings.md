@@ -208,3 +208,14 @@ ABC can take word-level input
    - Constraint outputs always go last
    - Have to specify the number of constraint outputs
    - The property checked is: Globally(cnst1 && cnst2 && ...) ==> Globally(prop1 && prop2 && .. )
+
+# April 26
+
+1. Document log XML. 
+1. Concept of non-atomic procedures with atomic blocks.
+
+# April 27
+
+1. Print out what is proved.
+1. Parse Z3 asts and bring them back to Z3 AST.  
+

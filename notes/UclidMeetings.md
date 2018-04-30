@@ -219,3 +219,6 @@ ABC can take word-level input
 1. Print out what is proved.
 1. Parse Z3 asts and bring them back to Z3 AST.  
 
+# April 30
+
+1. Introduce local variables to next

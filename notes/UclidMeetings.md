@@ -105,9 +105,11 @@ Some other notes: if we add a counter to exprToZ3, then expression #51 when run 
 1. Implement change from :: and -> to '.' operators. [done]
 1. Implement constant declarations with literals associated with them. [done]
 1. Constant declarations and type declarations that can exist outside a module.
-1. While loops.
-1. Synthesis.
+1. While loops. [done]
+1. Synthesis. [in-progress]
 1. Scripting language improvements.
+   * asserts and assumes in the control block.
+   * print strings
 1. Hyper-properties.
 1. Check if the LTL property contains only G, X after conversion to NNF; If so don't generate the liveness proof obligations.  
 
@@ -115,8 +117,8 @@ Some other notes: if we add a counter to exprToZ3, then expression #51 when run 
 
 1. Investigate profiling infrastructure.
 1. Why do we have both RuntimeError and AssertionError? We should only have one.
-1. Try Boolector as another backend solver.
-1. Create individual publish.sh files for each folder. Don't publish tutorial sources.
+1. Try Boolector as another backend solver. [done]
+1. Create individual publish.sh files for each folder. Don't publish tutorial sources. [done]
 1. Document CoverDecorator.
 
 Further TODOs
@@ -221,4 +223,34 @@ ABC can take word-level input
 
 # April 30
 
-1. Introduce local variables to next
+1. Introduce local variables to next.
+1. Change universal binary packager to output package in directory that is not version specific. 
+1. Result parsing
+
+# May 04
+
+## UCLID Notes
+
+1. Make sure we havoc uninterpreted functions.
+    
+    For now we can fake this by passing in the step index to a UF.
+
+1. Profiling infrastructure.
+
+    export JAVA_OPTS="-Xmx256M -Xms32M -Xprof"
+
+    and then run uclid.
+
+## Vectre Notes
+
+1. Trick to havoc a specific function.
+
+    havoc idx;
+    arr[idx] = uf(idx);
+    assume (idx \in Set)
+
+1. Allow the ROB to not pick an instruction in any particular cycle. This is required to model structural hazards.
+
+1. Consider making some of the types uninterpreted.
+
+1. 

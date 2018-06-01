@@ -253,4 +253,23 @@ ABC can take word-level input
 
 1. Consider making some of the types uninterpreted.
 
-1. 
+# June 1
+
+## ADEPT Retreat
+
+1. Comparison with Coq
+1. KeyStone [Open Source Sanctum Implementation]
+
+## Feedback
+
+1. R. Bryant tried to port Y86 to Boogie
+   Looking more promising than Boogie.
+
+### Tutorial
+
+1. Mention uninterpreted functions in the beginning.
+1. Description of specification [assume, assert, invariants].
+1. Use CmdId, and list of valid commands.
+1. Inject concrete values to symbolic constants.
+   > set command.
+1. Update grammar.

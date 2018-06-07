@@ -273,3 +273,37 @@ ABC can take word-level input
 1. Inject concrete values to symbolic constants.
    > set command.
 1. Update grammar.
+
+# June 5
+
+## ADEPT Retreat
+
+1. Kevin: People would like to see how we can derive new bugs from this model:
+  * That is the aim: generalize spectre to a broader class of attacks, but we're not there yet.
+  * Most of the other work was like that.
+1. Kevin: How do we find new bugs?
+1. Concrete thing: interact closely with Krste and his group and build a systems stack on top of it. [Called KeyStone].
+1. Apple are interested in the people less in the work.
+
+## Kevin/Cameron
+
+1. Look at the tutorial and see if it makes sense.
+
+### SyGuS 
+
+1. Convert from SMT AST to Uclid format.
+1. Support general SyGuS format.
+1. Test out bitvectors.
+
+### Kevin TODO
+
+1. Print the result.
+1. Print the invariant.
+
+Next step: interface general SyGuS format.
+
+### Cameron TODO
+
+1. Try extending the Vectre model.
+   * Do this in a way that the Uclid model is not specialized to each variant.
+   * Give us some insight in a general attacker model.

@@ -307,3 +307,8 @@ Next step: interface general SyGuS format.
 1. Try extending the Vectre model.
    * Do this in a way that the Uclid model is not specialized to each variant.
    * Give us some insight in a general attacker model.
+
+## Tutotorial
+
+* Does not mention `sharedvar`.
+

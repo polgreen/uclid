@@ -328,4 +328,4 @@ Next step: interface general SyGuS format.
 
 4. Need to add distinct keyword that translates to SMT's distinct operator.
 
-5. Flexible ordering of requires, ensures and modifies.
+5. Flexible ordering of requires, ensures and modifies. [DONE]

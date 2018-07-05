@@ -308,7 +308,32 @@ Next step: interface general SyGuS format.
    * Do this in a way that the Uclid model is not specialized to each variant.
    * Give us some insight in a general attacker model.
 
-## Tutotorial
+## Tutorial
 
 * Does not mention `sharedvar`.
 
+# July 01, 2018
+
+1. add support for:
+
+    type _ = common._
+
+    [DONE] but syntax is now:
+
+    type * = common.*;
+
+2. add support for importing constants.
+
+3. Usage of post-conditions:
+    
+ * Should we have a noinline/inline declaration?
+ * Preferably need a way which preserves inline as the default.
+ * Let's go with procedure {:noinline} foo(...)
+
+ [DONE] but syntax is procedure [inline] and procedure [noinline].
+
+4. Need to add distinct keyword that translates to SMT's distinct operator.
+
+ [DONE]
+
+5. Flexible ordering of requires, ensures and modifies. [DONE]

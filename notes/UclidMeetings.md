@@ -337,3 +337,18 @@ Next step: interface general SyGuS format.
  [DONE]
 
 5. Flexible ordering of requires, ensures and modifies. [DONE]
+
+
+# September 7, 2018
+
+Kevin has a 2-safety proof that goes through.
++ Path src2/kkmc_var1_2safety.ucl; branch: experimental_kkmc
++ Proof of confidentiality
+    - cache is flushed after sysret
+    - no stores
+    - registers are restored from stash
++ Proof is by induction.
++ Takes 2-3 minutes.
++ [TODO/Pramod] Look into whether we can do any easy parallelization.
++ [TODO/Pramod] Look into installing on a bigger server to see if it helps.
+

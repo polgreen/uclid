@@ -354,26 +354,26 @@ Kevin has a 2-safety proof that goes through.
 
 # October 10, 2018
 
-## vectre effort
-
-## uclid5
-
-### hyperproperties
-
-1. get rid of hyperproperty, keep hyperinvariant
-2. change x.1 to x:1
-
-plan is to implement self-composition, lazy sc
-look at the paper sanjit sent
-
-### model checking/pdr
-
-1. thinking of implementing z3 horn clause API
-2. sanjit: btor or ABC are better engines for bitvectors
-
-# vectre
+# Vectre
 
 1. speculative vs. out of order execution
 2. look at e-QED, symbolic QED work: test generators for processors
 3. verifying ooo processor was FMCAD 2002
+
+# Hyperproperty syntax:
+   - currently: hyperproperty[k] ...
+   - change to: hypersafety[k] ...
+       similarly: hyperinvariant[k] ...
+       similarly: hyperliveness[k] ...
+   - The .1, .2 notation: should we use :1, :2 instead to avoid confusion with field access?
+     It's not a parsing issue, just a way of keeping notation clearly distinct for users.
+   - later if we support HyperLTL, we could simply have: property[HyperLTL] or something like that?
+
+* Implement Z3 Horn clause solver as a back-end? Use of PDR?
+  Qn: How is the support for BV+Arrays?
+
+* Implement BTOR/word-level interface to ABC, etc.
+  Pramod: this may be a lot of work to interface to C. 
+  -- Ask Alan to help?
+
 

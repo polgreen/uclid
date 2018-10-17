@@ -352,3 +352,28 @@ Kevin has a 2-safety proof that goes through.
 + [TODO/Pramod] Look into whether we can do any easy parallelization.
 + [TODO/Pramod] Look into installing on a bigger server to see if it helps.
 
+# October 10, 2018
+
+# Vectre
+
+1. speculative vs. out of order execution
+2. look at e-QED, symbolic QED work: test generators for processors
+3. verifying ooo processor was FMCAD 2002
+
+# Hyperproperty syntax:
+   - currently: hyperproperty[k] ...
+   - change to: hypersafety[k] ...
+       similarly: hyperinvariant[k] ...
+       similarly: hyperliveness[k] ...
+   - The .1, .2 notation: should we use :1, :2 instead to avoid confusion with field access?
+     It's not a parsing issue, just a way of keeping notation clearly distinct for users.
+   - later if we support HyperLTL, we could simply have: property[HyperLTL] or something like that?
+
+* Implement Z3 Horn clause solver as a back-end? Use of PDR?
+  Qn: How is the support for BV+Arrays?
+
+* Implement BTOR/word-level interface to ABC, etc.
+  Pramod: this may be a lot of work to interface to C. 
+  -- Ask Alan to help?
+
+

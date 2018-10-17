@@ -354,7 +354,13 @@ Kevin has a 2-safety proof that goes through.
 
 # October 10, 2018
 
-* Hyperproperty syntax:
+# Vectre
+
+1. speculative vs. out of order execution
+2. look at e-QED, symbolic QED work: test generators for processors
+3. verifying ooo processor was FMCAD 2002
+
+# Hyperproperty syntax:
    - currently: hyperproperty[k] ...
    - change to: hypersafety[k] ...
        similarly: hyperinvariant[k] ...

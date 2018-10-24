@@ -456,3 +456,14 @@ Paul Kocher
 
 
 
+
+# October 19, 2018
+
+1. Complete interface to Boolector (and possibly other SMT solvers like CVC). HIGH PRIORITY.
+2. Interface to hw model checkers via BTOR format.
+3. Improvements on SyGuS, integration with compositional reasoning
+4. Extension with real valued variables for CPS. LOW PRIORITY for now.
+
+* IMPORTANT: How to separate attacker models from implementations/properties; 
+  either a general design method or language support would be nice.
+

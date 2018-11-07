@@ -376,6 +376,85 @@ Kevin has a 2-safety proof that goes through.
   Pramod: this may be a lot of work to interface to C. 
   -- Ask Alan to help?
 
+# October 17, 2018
+
+## Intel Review
+
+1. Cameron and Kevin went to Intel
+2. Went quite well
+
+## Stanford Folks
+
+1. CoreIR is their version of FIRRTL
+2. Costa? is their formal interface engine
+3. Magma is the Python-based front-end
+4. They have a tool paper at FMCAD 2018 describing their infrastructure
+5. They use mostly CVC; trash talked Z3's bitvector engine
+6. Note to ourselves: We should implement the boolector backend
+
+## Intel
+
+1. Are most interested in variant 1.
+    - Doesn't have any obvious HW fix.
+    - We are on the right track with the 4-safety property.
+2. Variant 4 has a hardware fix already.
+3. Variant 2 is also easier to fix.
+
+## UCLID5 Suggestions
+
+- Produce output in BTOR format
+- Will allows to integrate with btormc (Armin Biere's boolector based MC)
+- Need to explore the Oracle guided synthesis and synthesis a core part of this UCLID5
+
+## Sanjit @ MEMOCODE
+
+- Talked about formal foundations, then inductive synthesis, and then UCLID5
+- Should we introduce tactics to uclid5
+    - We shouldn't have to specifically say synthesize_invariant.
+      Induction should automatically call SyGuS first.
+    - Devise a way of doing compositional proofs.
+        > At the level of modules.
+- How do you model adversaries?
+    - UCLID5 should make it easier to model attackers.
+    - How do model colluding but distrusting attackers?
+- Can we do neural network models in UCLID5?
+    - Need support for reals.
+    - Discrete time + real valued variables
+- Lots of interest in smart contract verifications
+
+## Vectre
+
+- It is important to distinguish 
+    > between the attacker model 
+    > and the actual model
+    > and the property
+
+- Fix large comment parsing
+
+Paul Kocher
+- 15 spectre gadgets he found in microsoft code
+
+
+# Meeting 24-10-2018
+
+1. Kevin has coded up some of Kocher's gadets and put them in the vectre repository.
+    * The BAP output looks weird. We need to understand the BAP IR better.
+    * We can get gcc assembly out of this by using gcc -S ex1.c
+    * We can also get assembly by compiling gcc -c ex1.c and then using:
+         objdump -d -M ex1.o
+    * TODO: we should convert some of these into uclid and try out the 4-safety property on them.
+
+2. We should look into Boolector.
+    * It supports arrays without quantifiers.
+    * We can look into using lambdas to get rid of quantifiers.
+    * Look into output of BtorMC from uclid
+    * BtorMC is packaged with Boolector.
+    * We should try to find an example which z3 struggles with and use boolector on it.
+
+3. Boris Kopf has done a bunch of QIF work
+   
+
+
 
 
 # October 19, 2018

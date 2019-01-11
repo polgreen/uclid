@@ -476,3 +476,13 @@ Meeting between Sanjit, Cameron, Kevin
   if there is no requires/ensures, but this is hard for users to know. 
   At a minimum, we need better documentation of the [inline]/[noinline] feature.
 
+* Update, Jan 11: Yes, it works as above.
+
+# January 11, 2019
+
+* Generation of SMTLIB format is slow for external SMT solvers, need to
+  memoize expressions using the old UCLID strategy of having unique IDs for
+  sub-expressions and generating SMTLIB let-expressions. Need to implement.
+
+
+

@@ -467,3 +467,22 @@ Paul Kocher
 * IMPORTANT: How to separate attacker models from implementations/properties; 
   either a general design method or language support would be nice.
 
+# December 4, 2018
+
+Meeting between Sanjit, Cameron, Kevin
+
+* What happens if a procedure neither has an [inline] or [noinline] directive,
+  is it inlined or not? Seems like there is a silent rule that it will be inlined
+  if there is no requires/ensures, but this is hard for users to know. 
+  At a minimum, we need better documentation of the [inline]/[noinline] feature.
+
+* Update, Jan 11: Yes, it works as above.
+
+# January 11, 2019
+
+* Generation of SMTLIB format is slow for external SMT solvers, need to
+  memoize expressions using the old UCLID strategy of having unique IDs for
+  sub-expressions and generating SMTLIB let-expressions. Need to implement.
+
+
+

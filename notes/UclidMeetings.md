@@ -530,4 +530,8 @@ Meeting between Pramod, Kevin, Cameron, Pranav, Sanjit
   - Update tutorial
   - Write up document formalizing Semantics of UCLID5 language
 
+* "Smoke" feature a la Boogie
+  - could have a command added to the control block that peppers "assert false" randomly to check
+
+
 

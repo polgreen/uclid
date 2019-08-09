@@ -484,5 +484,54 @@ Meeting between Sanjit, Cameron, Kevin
   memoize expressions using the old UCLID strategy of having unique IDs for
   sub-expressions and generating SMTLIB let-expressions. Need to implement.
 
+# April 5, 2019
+
+* Review Flanagan-Saxe VC generation, current VC generation approach, discuss if we should switch.
+* Review keystone verification progress (porting of Proof of SRE for TAP) [Pranav]
+* Finish/review implementation of import for consts and functions from one module into another [Pranav]
+* Finish/review implementation of calling a procedure in a sub-module from a parent module [Pranav & Kevin]
+* Update on ABC integration -- develop a few small examples to illustrate what the integration would look like [Cameron]
+
+# May 17, 2019
+
+Meeting between Pramod, Kevin, Cameron, Pranav, Sanjit
+
+* Quantifier Instantiation: 
+  - already have patterns as in Boogie
+  - can we also implement a way for the user to suggest potential instantiations directly?
+
+* Global Namespace 
+
+* Smarter Dependency Resolution (imports, etc.)
+  - able to import defines
+
+* Performance Improvements through Encoding 
+  - Better VC generation
+
+* Language extensions:
+  - Add "return" to the language for easier control-flow modeling?
+  - "elif" statements
+
+* Native SyGuS solver
+
+* inline vs noinline
+  - clearer documentation
+  - Commandline options for managing inline/noinline
+
+* ABC integration
+  - get it to a point with BV+AR+UF models can be translated to
+    ABC and interfaced to run PDR
+
+* Better error display
+  - file/line info for parser errors
+  - file/line info for asserts that pass
+
+* Update documentation
+  - Update tutorial
+  - Write up document formalizing Semantics of UCLID5 language
+
+* "Smoke" feature a la Boogie
+  - could have a command added to the control block that peppers "assert false" randomly to check
+
 
 

@@ -500,16 +500,17 @@ Meeting between Pramod, Kevin, Cameron, Pranav, Sanjit
   - already have patterns as in Boogie
   - can we also implement a way for the user to suggest potential instantiations directly?
 
-* Global Namespace 
+* Global Namespace [DONE per Pranav, updated 9/6/19]
 
 * Smarter Dependency Resolution (imports, etc.)
   - able to import defines
 
 * Performance Improvements through Encoding 
   - Better VC generation
+  - SSA and optimizations 
 
 * Language extensions:
-  - Add "return" to the language for easier control-flow modeling?
+  - Add "return" to the language for easier control-flow modeling? [HIGH PRIORITY]
   - "elif" statements
 
 * Native SyGuS solver

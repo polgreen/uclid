@@ -7,6 +7,7 @@ systems across a range of concurrency models and background logical theories;
 2. Verification of a range of properties, including assertions, invariants, and temporal
 properties, and
 3. Integrate modeling and verification with algorithmic and inductive synthesis.
+
 Uclid5 draws inspiration from the earlier UCLID system for modeling and verification
 of systems, in particular the idea of modeling concurrent systems in first-order
 logic with a range of background theories, and the use of proof scripts within the model.

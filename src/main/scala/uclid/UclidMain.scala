@@ -151,6 +151,7 @@ object UclidMain {
       }
       if (config.modelCounter) {
         config.files.foreach(f => lang.modelcounts.UMCMain.checkModel(f))
+        return
       }
       val mainModuleName = Identifier(config.mainModuleName)
       val modules = compile(config.files, mainModuleName)

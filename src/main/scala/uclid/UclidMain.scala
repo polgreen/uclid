@@ -80,7 +80,8 @@ object UclidMain {
       printStackTrace: Boolean = false,
       verbose : Int = 0,
       files : Seq[java.io.File] = Seq(),
-      testFixedpoint: Boolean = false
+      testFixedpoint: Boolean = false,
+      modelCounter: Boolean = false
   )
 
   def parseOptions(args: Array[String]) : Option[Config] = {
@@ -126,6 +127,10 @@ object UclidMain {
       opt[Unit]('t', "test-fixedpoint").action {
         (_, c) => c.copy(testFixedpoint = true)
       }.text("Test fixed point")
+      
+      opt[Unit]('C', "model-counter").action {
+        (_, c) => c.copy(modelCounter = true)
+      }.text("Model counter DSL.")
 
       arg[java.io.File]("<file> ...").unbounded().required().action {
         (x, c) => c.copy(files = c.files :+ x)
@@ -143,6 +148,9 @@ object UclidMain {
       if (config.testFixedpoint) {
         smt.Z3HornSolver.test1()
         return
+      }
+      if (config.modelCounter) {
+        config.files.foreach(f => lang.modelcounts.UMCMain.checkModel(f))
       }
       val mainModuleName = Identifier(config.mainModuleName)
       val modules = compile(config.files, mainModuleName)

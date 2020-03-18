@@ -535,4 +535,16 @@ Meeting between Pramod, Kevin, Cameron, Pranav, Sanjit
   - could have a command added to the control block that peppers "assert false" randomly to check
 
 
+# January 17, 2020
+
+* Attendees: Elizabeth, Federico, Kevin, Pramod, Sanjit
+
+* Need to merge branches into master and consolidate
+
+* Problems with SMTLIB translation identified by Elizabeth
+
+* Confusing syntax: reference to UFs and consts through module names rather than module instances
+   --- better documentation, warnings to alert users of such usage?
+
+
 

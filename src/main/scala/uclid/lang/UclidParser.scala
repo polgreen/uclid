@@ -106,6 +106,8 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
     lazy val OpSub = "-"
     lazy val OpMul = "*"
     lazy val OpUMul = "*_u"
+    lazy val OpBvSrem = "%"
+    lazy val OpBvUrem = "%_u"
     lazy val OpBiImpl = "<==>"
     lazy val OpImpl = "==>"
     lazy val OpLT = "<"
@@ -183,10 +185,10 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
       "bv", "{", "}", ";", "=", ":", "::", ".", "*", "::=", "->",
       OpAnd, OpOr, OpBvAnd, OpBvOr, OpBvXor, OpBvNot, OpAdd, OpSub, OpMul,
       OpBiImpl, OpImpl, OpLT, OpGT, OpLE, OpGE, OpULT, OpUGT, OpULE, OpUGE, 
-      OpEQ, OpNE, OpConcat, OpNot, OpMinus, OpPrime)
+      OpEQ, OpNE, OpConcat, OpNot, OpMinus, OpPrime, OpBvUrem, OpBvSrem)
     lexical.reserved += (OpAnd, OpOr, OpAdd, OpSub, OpMul,
       OpBiImpl, OpImpl, OpLT, OpGT, OpLE, OpGE, OpULT, OpUGT, OpULE, OpUGE, OpEQ, OpNE,
-      OpBvAnd, OpBvOr, OpBvXor, OpBvNot, OpConcat, OpNot, OpMinus, OpPrime,
+      OpBvAnd, OpBvOr, OpBvXor, OpBvUrem, OpBvSrem, OpBvNot, OpConcat, OpNot, OpMinus, OpPrime,
       "false", "true", "bv", KwProcedure, KwBoolean, KwInteger, KwReturns,
       KwAssume, KwAssert, KwSharedVar, KwVar, KwHavoc, KwCall,
       KwIf, KwThen, KwElse, KwCase, KwEsac, KwFor, KwIn, KwRange, KwWhile,
@@ -205,6 +207,8 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
       case x ~ OpBvAnd ~ y => OperatorApplication(BVAndOp(0), List(x, y))
       case x ~ OpBvOr ~ y => OperatorApplication(BVOrOp(0), List(x, y))
       case x ~ OpBvXor ~ y => OperatorApplication(BVXorOp(0), List(x, y))
+      case x ~ OpBvUrem ~ y => OperatorApplication(BVUremOp(0), List(x, y))
+      case x ~ OpBvSrem ~ y => OperatorApplication(BVSremOp(0), List(x, y))  
       case x ~ OpLT ~ y => OperatorApplication(LTOp(), List(x,y))
       case x ~ OpGT ~ y => OperatorApplication(GTOp(), List(x,y))
       case x ~ OpLE ~ y => OperatorApplication(LEOp(), List(x,y))
@@ -318,6 +322,8 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
         E6 ~ OpBvAnd ~ E5 ^^ ast_binary |
         E6 ~ OpBvOr ~ E5 ^^ ast_binary  |
         E6 ~ OpBvXor ~ E5 ^^ ast_binary |
+        E6 ~ OpBvUrem ~ E5 ^^ ast_binary |
+        E6 ~ OpBvSrem ~ E5 ^^ ast_binary |
         E6
     }
     /** E6 = E7 OpRel E7 | E7  **/
@@ -468,9 +474,13 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
       Lhs ~ rep("," ~> Lhs) ~ "=" ~ Expr ~ rep("," ~> Expr) <~ ";" ^^
         { case l ~ ls ~ "=" ~ r ~ rs => AssignStmt(l::ls, r::rs) } |
       KwCall ~> Id ~ ExprList <~ ";" ^^
-        { case id ~ args => ProcedureCallStmt(id, List.empty, args) } |
+        { case id ~ args => ProcedureCallStmt(id, List.empty, args, None) } |
       KwCall ~> LhsList ~ ("=" ~> Id) ~ ExprList <~ ";" ^^
-        { case lhss ~ id ~ args => ProcedureCallStmt(id, lhss, args) } |
+        { case lhss ~ id ~ args => ProcedureCallStmt(id, lhss, args, None) } |
+      KwCall ~> Id ~ "." ~ Id ~ ExprList <~ ";" ^^
+        { case instanceId ~ "." ~ procId ~ args => ProcedureCallStmt(procId, List.empty, args, Some(instanceId)) } |
+      KwCall ~> LhsList ~ ("=" ~> Id) ~ "." ~ Id ~ ExprList <~ ";" ^^
+        { case lhss ~ instanceId ~ "." ~ procId ~ args => ProcedureCallStmt(procId, lhss, args, Some(instanceId)) } |
       KwNext ~ "(" ~> Id <~ ")" ~ ";" ^^
         { case id => lang.ModuleCallStmt(id) } |
       KwIf ~ "(" ~ "*" ~ ")" ~> (BlkStmt <~ KwElse) ~ BlkStmt ^^
@@ -527,7 +537,7 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
     lazy val ModifiesExprs : PackratParser[List[lang.ProcedureModifiesExpr]] = {
       KwModifies ~> Id ~ rep("," ~> Id) <~ ";" ^^ {
         case id ~ ids => {
-          (id :: ids).map(i => lang.ProcedureModifiesExpr(i))
+          (id :: ids).map(i => lang.ProcedureModifiesExpr(lang.ModifiableId(i)))
         }
       }
     }
@@ -542,8 +552,8 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
     def collectEnsures(vs : List[lang.ProcedureVerificationExpr]) : List[Expr] = {
       vs.collect { case e : lang.ProcedureEnsuresExpr => e.expr }
     }
-    def collectModifies(vs : List[lang.ProcedureVerificationExpr]) : List[Identifier] = {
-      vs.collect { case e : lang.ProcedureModifiesExpr => e.id }
+    def collectModifies(vs : List[lang.ProcedureVerificationExpr]) : List[ModifiableEntity] = {
+      vs.collect { case e : lang.ProcedureModifiesExpr  => e.modifiable }
     }
     lazy val ProcedureDecl : PackratParser[lang.ProcedureDecl] = positioned {
       KwProcedure ~> ProcedureAnnotationList.? ~ Id ~ IdTypeList ~ (KwReturns ~> IdTypeList) ~
@@ -644,7 +654,9 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
       OpConcat ^^ { case _ => ConcatOp() } |
       OpAdd ^^ { case _ => AddOp() } |
       OpSub ^^ { case _ => SubOp() } |
-      OpMul ^^ { case _ => MulOp() }
+      OpMul ^^ { case _ => MulOp() } | 
+      OpBvUrem ^^ { case _ => BVUremOp(0) } |
+      OpBvSrem ^^ { case _ => BVSremOp(0) }
     }
 
     lazy val UnaryOpAppTerm: PackratParser[lang.OpAppTerm] = positioned {
@@ -715,6 +727,9 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
         }
       }
     }
+    lazy val ModuleDefsImportDecl : PackratParser[lang.ModuleDefinesImportDecl] = positioned {
+      KwDefine ~ "*" ~ "=" ~> Id <~ "." ~ "*" ~ ";" ^^ { case id => lang.ModuleDefinesImportDecl(id) }
+    }
     lazy val InitDecl : PackratParser[lang.InitDecl] = positioned {
       KwInit ~> BlkStmt ^^
         { case b => lang.InitDecl(b) }
@@ -752,15 +767,18 @@ class UclidParser extends UclidTokenParsers with PackratParsers {
     lazy val Decl: PackratParser[Decl] =
       positioned (InstanceDecl | TypeDecl | ConstDecl | FuncDecl |
                   ModuleTypesImportDecl | ModuleFuncsImportDecl | ModuleConstsImportDecl |
-                  SynthFuncDecl | DefineDecl | GrammarDecl |
+                  SynthFuncDecl | DefineDecl | ModuleDefsImportDecl | GrammarDecl |
                   VarsDecl | InputsDecl | OutputsDecl | SharedVarsDecl |
                   ConstLitDecl | ConstDecl | ProcedureDecl |
                   InitDecl | NextDecl | SpecDecl | AxiomDecl)
 
     // control commands.
     lazy val CmdParam : PackratParser[lang.CommandParams] = 
+      // TODO: Current fix to allow for logic to be specified for synthesize invariant
       ( Id <~ "=" ) ~ ("[" ~> Expr ~ rep("," ~> Expr) <~ "]") ^^ 
-        { case id ~ ( e ~ es ) => lang.CommandParams(id, e :: es) }
+        { case id ~ ( e ~ es ) => lang.CommandParams(id, e :: es) } |
+      ( Id ) ^^ { case id => lang.CommandParams(id, List.empty) } 
+      
     lazy val CmdParamList : PackratParser[List[lang.CommandParams]] = 
       "[" ~ "]" ^^ { case _ => List.empty } |
       "[" ~> CmdParam ~ rep(";" ~> CmdParam) <~ "]" ^^ { case p ~ ps => p :: ps }

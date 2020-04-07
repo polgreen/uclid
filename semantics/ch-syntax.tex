@@ -1,0 +1,27 @@
+\chapter{Syntax}
+
+\newcommand{\paratitle}[1]{\textsf{\textbf{#1}}}
+\newcommand{\nonterminal}[1]{$\langle \textit{#1} \rangle$}
+\newcommand{\primesymbol}{\textsf{'}}
+\newcommand{\binop}{\ensuremath{\odot_b}}
+\newcommand{\unop}{\ensuremath{\odot_u}}
+
+\setlength{\grammarindent}{12em} % increase separation between LHS/RHS 
+
+\paratitle{A model} consist of a list of modules. Each module consists of a list of declarations followed by an optional control block.
+\begin{grammar}
+     <Model> ::= <Module>*
+
+     <Module> ::= \keywordbf{module} <Id>~~ `{' <Decl>* <ControlBlock>? `}'
+
+     <Decl> ::= <VarDecl>* | <NextDecl>
+
+     <VarDecl> ::= \keywordbf{var} <Id> `:' <Type> `;'
+
+     <NextDecl> ::= \keywordbf{next} ~ `{' <Stmt>* `}'
+
+     <Stmt> ::= <Id>\primesymbol{} = <Expr> `;'
+
+     <Expr> ::= <Id> | <Expr> \binop{} <Expr> | \unop{} <Expr>
+\end{grammar}
+

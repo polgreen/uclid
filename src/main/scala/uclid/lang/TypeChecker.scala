@@ -355,7 +355,7 @@ class ExpressionTypeCheckerPass extends ReadOnlyPass[Set[Utils.TypeError]]
         }
         case bvOp : BVArgOperator => {
           checkTypeError(argTypes.size == bvOp.arity, "Operator '%s' must have exactly %d argument(s)".format(opapp.op.toString, bvOp.arity), opapp.pos, c.filename)
-          checkTypeError(argTypes.forall(_.isInstanceOf[BitVectorType]), "Argument(s) to operator '" + opapp.op.toString + "' must be of type BitVector", opapp.pos, c.filename)
+          //checkTypeError(argTypes.forall(_.isInstanceOf[BitVectorType]), "Argument(s) to operator '" + opapp.op.toString + "' must be of type BitVector", opapp.pos, c.filename)
           bvOp match {
             case BVLTOp(_) | BVLEOp(_) | BVGTOp(_) | BVGEOp(_) =>
               new BooleanType()
@@ -366,7 +366,7 @@ class ExpressionTypeCheckerPass extends ReadOnlyPass[Set[Utils.TypeError]]
             case BVAddOp(_) | BVSubOp(_) | BVMulOp(_) | BVUnaryMinusOp(_) =>
               checkTypeError(bvOp.w != 0, "Invalid width argument to '%s' operator".format(opapp.op.toString()), opapp.pos, c.filename)
               new BitVectorType(bvOp.w)
-            case BVAndOp(_) | BVOrOp(_) | BVXorOp(_) | BVNotOp(_) =>
+            case BVAndOp(_) | BVOrOp(_) | BVXorOp(_) | BVNotOp(_)| BVUremOp(_) | BVSremOp(_) =>
               val t = BitVectorType(argTypes(0).asInstanceOf[BitVectorType].width)
               bvOpMap.put(bvOp.astNodeId, t.width)
               t
@@ -378,21 +378,6 @@ class ExpressionTypeCheckerPass extends ReadOnlyPass[Set[Utils.TypeError]]
             case BVZeroExtOp(w, e) =>
               checkTypeError(e > 0, "Invalid width argument to '%s' operator".format(opapp.op.toString()), opapp.pos, c.filename)
               val w = e + argTypes(0).asInstanceOf[BitVectorType].width
-              bvOpMap.put(bvOp.astNodeId, w)
-              BitVectorType(w)
-            case BVLeftShiftIntOp(w, e) =>
-              checkTypeError(e > 0, "Invalid width argument to '%s' operator".format(opapp.op.toString()), opapp.pos, c.filename)
-              val w = argTypes(0).asInstanceOf[BitVectorType].width
-              bvOpMap.put(bvOp.astNodeId, w)
-              BitVectorType(w)
-            case BVLRightShiftIntOp(w, e) =>
-              checkTypeError(e > 0, "Invalid width argument to '%s' operator".format(opapp.op.toString()), opapp.pos, c.filename)
-              val w = argTypes(0).asInstanceOf[BitVectorType].width
-              bvOpMap.put(bvOp.astNodeId, w)
-              BitVectorType(w)
-            case BVARightShiftIntOp(w, e) =>
-              checkTypeError(e > 0, "Invalid width argument to '%s' operator".format(opapp.op.toString()), opapp.pos, c.filename)
-              val w = argTypes(0).asInstanceOf[BitVectorType].width
               bvOpMap.put(bvOp.astNodeId, w)
               BitVectorType(w)
             case BVLeftShiftBVOp(w) =>
@@ -548,8 +533,17 @@ class ExpressionTypeCheckerPass extends ReadOnlyPass[Set[Utils.TypeError]]
           argTypes(0)
         case OldOperator() =>
           checkTypeError(argTypes.size == 1, "Expect exactly one argument to 'old'", opapp.pos, c.filename)
-          checkTypeError(opapp.operands(0).isInstanceOf[Identifier], "Argument to old operator must be an identifier", opapp.pos, c.filename)
-          argTypes(0)
+          //NOTE (REVISIT): We want to allow polymorphic selects
+          if (opapp.operands(0).isInstanceOf[OperatorApplication]) {
+            val checkOp = opapp.operands(0).asInstanceOf[OperatorApplication]
+            checkTypeError(checkOp.op.isInstanceOf[PolymorphicSelect] || checkOp.op.isInstanceOf[SelectFromInstance], "Argument must be a instance var or an identifier", opapp.pos, c.filename)
+            opAppType(checkOp)
+          } else {
+            checkTypeError(opapp.operands(0).isInstanceOf[Identifier], "Argument to old operator must be an identifier", opapp.pos, c.filename)
+            argTypes(0)
+          }
+          //checkTypeError(opapp.operands(0).isInstanceOf[Identifier], "Argument to old operator must be an identifier", opapp.pos, c.filename)
+          //argTypes(0)
         case PastOperator() =>
           checkTypeError(argTypes.size == 1, "Expect exactly on argument to 'past'", opapp.pos, c.filename)
           checkTypeError(opapp.operands(0).isInstanceOf[Identifier], "Argument to past operator must be an identifier", opapp.pos, c.filename)
@@ -678,12 +672,11 @@ class PolymorphicTypeRewriterPass extends RewritePass {
             case BVNotOp(_) => width.flatMap((w) => Some(BVNotOp(w)))
             case BVSignExtOp(_, e) => width.flatMap((w) => Some(BVSignExtOp(w, e)))
             case BVZeroExtOp(_, e) => width.flatMap((w) => Some(BVZeroExtOp(w, e)))
-            case BVLeftShiftIntOp(_, e) => width.flatMap((w) => Some(BVLeftShiftIntOp(w, e)))
-            case BVLRightShiftIntOp(_, e) => width.flatMap((w) => Some(BVLRightShiftIntOp(w, e)))
-            case BVARightShiftIntOp(_, e) => width.flatMap((w) => Some(BVARightShiftIntOp(w, e)))
             case BVLeftShiftBVOp(_) => width.flatMap((w) => Some(BVLeftShiftBVOp(w)))
             case BVLRightShiftBVOp(_) => width.flatMap((w) => Some(BVLRightShiftBVOp(w)))
             case BVARightShiftBVOp(_) => width.flatMap((w) => Some(BVARightShiftBVOp(w)))
+            case BVUremOp(_) => width.flatMap((w) => Some(BVUremOp(w)))
+            case BVSremOp(_) => width.flatMap((w) => Some(BVSremOp(w)))  
             case _ => Some(bv)
           }
           newOp match {

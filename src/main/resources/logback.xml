@@ -14,8 +14,10 @@
   <logger name="uclid.lang.ASTRewriter" level="OFF"/>
   <logger name="uclid.lang.ExprRewriterPass" level="OFF"/>
   <logger name="uclid.lang.BlockFlattenerPass" level="OFF"/>
+  <logger name="uclid.lang.ModularProductProgramPass" level="OFF"/>
   <logger name="uclid.lang.ConstantLitRewriterPass" level="OFF"/>
   <logger name="uclid.lang.ExpressionTypeCheckerPass" level="OFF"/>
+  <logger name="uclid.lang.FindProcedureDependency" level="OFF"/>
   <logger name="uclid.lang.InlineProcedurePass" level="OFF"/>
   <logger name="uclid.lang.LazySCSolver" level="OFF"/>
   <logger name="uclid.lang.LTLPropertyRewriterPass" level="OFF"/>

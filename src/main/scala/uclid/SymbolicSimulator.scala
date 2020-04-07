@@ -222,12 +222,12 @@ class SymbolicSimulator (module : Module) {
             symbolicSimulate(0, cmd.args(0)._1.asInstanceOf[IntLit].value.toInt, true, false, context, label, propertyFilter, propertyFilter)
           case "induction" =>
             val labelBase : String = cmd.resultVar match {
-              case Some(l) => l.toString + ": induction (base)"
-              case None    => "induction (base)"
+              case Some(l) => l.toString + ": induction_base"
+              case None    => "induction_base"
             }
             val labelStep : String = cmd.resultVar match {
-              case Some(l) => l.toString + ": induction (step)"
-              case None    => "induction (step)"
+              case Some(l) => l.toString + ": induction_step"
+              case None    => "induction_step"
             }
             val k = if (cmd.args.size > 0) {
               cmd.args(0)._1.asInstanceOf[IntLit].value.toInt
@@ -287,7 +287,8 @@ class SymbolicSimulator (module : Module) {
               case None =>
                 UclidMain.println("Error: Can't execute synthesize_invariant as synthesizer was not provided. ")
               case Some(synth) => {
-                synthesizeInvariants(context, createNoLTLFilter(properties), synth, cmd.params(0).toString, config.sygusTypeConvert) match {
+                //TODO: Note that cmd.params(0).name.toString is used b/c of temporary fix to parser
+                synthesizeInvariants(context, createNoLTLFilter(properties), synth, cmd.params(0).name.toString, config.sygusTypeConvert) match {
                   // Failed to synthesize invariant
                   case None => UclidMain.println("Failed to synthesize invariant.")
                   // Successfully synthesized an invariant
@@ -1566,7 +1567,7 @@ class SymbolicSimulator (module : Module) {
       (mapAcc, decl) => {
         decl._2 match {
           case Scope.ConstantVar(id, typ) => mapAcc + (id -> smt.Symbol(id.name, smt.Converter.typeToSMT(typ)))
-          case Scope.Function(id, typ) => mapAcc + (id -> smt.Symbol(id.name, smt.Converter.typeToSMT(typ)))
+          case Scope.Function(id, typ) => mapAcc // functions should never be primed
           case Scope.EnumIdentifier(id, typ) => mapAcc + (id -> smt.EnumLit(id.name, smt.EnumType(typ.ids.map(_.toString))))
           case Scope.InputVar(id, typ) => mapAcc + (id -> smt.Symbol(id.name, smt.Converter.typeToSMT(typ)))
           case Scope.OutputVar(id, typ) => mapAcc + (id -> smt.Symbol(id.name + "!", smt.Converter.typeToSMT(typ)))
@@ -1628,6 +1629,8 @@ class SymbolicSimulator (module : Module) {
     def initAddAssertion(e : AssertInfo) : Unit = { initAssertions += e }
     var nextAssertions : ArrayBuffer[AssertInfo] = new ArrayBuffer[AssertInfo]()
     def nextAddAssertion(e : AssertInfo) : Unit = { nextAssertions += e }
+    // axioms
+    var axioms : ListBuffer[smt.Expr] = new ListBuffer[smt.Expr]()
 
     val defaultSymbolTable = getDefaultSymbolTable(synthesisCtx)
     val primeSymbolTable = getPrimeSymbolTable(synthesisCtx)
@@ -1653,13 +1656,29 @@ class SymbolicSimulator (module : Module) {
         None
       }
     }).flatten.toList
+
+    // add all axioms in procedure scope, independent of state variable references
+    module.axioms.foreach { 
+      p => axioms += evaluate(p.expr, defaultSymbolTable, ArrayBuffer.empty, 0, synthesisCtx)
+      assertLog.debug("non-axiomVar: {}", p.toString())
+    }
+
     // Compute init expression from the result of symbolic simulation.
     val initExprs = (initState.map {
       p => {
         val lhs = defaultSymbolTable.get(p._1).get
         val rhs = p._2
         if (lhs == rhs) { smt.BooleanLit(true) }
-        else { smt.OperatorApplication(smt.EqualityOp, List(lhs, rhs)) }
+        else { 
+          //println("Printing init state construction")
+          //println(p._2.toString.contains("havoc"))
+          //TODO: Tmp fix for havoc statements (just don't include them)
+          //if (p._2.toString.contains("havoc")) {
+          //  smt.OperatorApplication(smt.EqualityOp, List(lhs, lhs))
+          //} else {
+            smt.OperatorApplication(smt.EqualityOp, List(lhs, rhs)) 
+          //}
+        }
       }
     }.toList ++ initAssumptions.toList).filter(p => p != smt.BooleanLit(true))
     val initExpr : smt.Expr = initExprs.size match {
@@ -1670,9 +1689,19 @@ class SymbolicSimulator (module : Module) {
     // Do the same for next expressions.
     val nextExprs = (nextState.map {
       p => {
-        val lhs = primeSymbolTable.get(p._1).get
-        val rhs = p._2
-        smt.OperatorApplication(smt.EqualityOp, List(lhs, rhs))
+        // Some things, like functions, will not be in primeSymbolTable. That is fine.
+        if (primeSymbolTable.contains(p._1)) {
+          val lhs = primeSymbolTable.get(p._1).get
+          val rhs = p._2
+          if (lhs != rhs) {
+            smt.OperatorApplication(smt.EqualityOp, List(lhs, rhs))
+          }
+          else {
+            smt.BooleanLit(true)  
+          }
+        } else {
+          smt.BooleanLit(true)
+        }
       }
     }.toList ++ nextAssumptions.toList).filter(p => p != smt.BooleanLit(true))
     val nextExpr : smt.Expr = nextExprs.size match {
@@ -1683,7 +1712,9 @@ class SymbolicSimulator (module : Module) {
     val verificationConditions = assertions ++ invariants
     Utils.assert(verificationConditions.size > 0, "Must have at least one assertion/invariant.")
     Utils.assert(initAssertions.size == 0, "Must not have assertions in the init block for SyGuS.") 
-    return synthesizer.synthesizeInvariant(initExpr, nextExpr, verificationConditions, synthesisCtx, logic)
+    val initHavocs = getHavocs(initExpr).map(p => (p.id, p.typ))
+    val nextHavocs = getHavocs(nextExpr).map(p => (p.id, p.typ))
+    return synthesizer.synthesizeInvariant(initExpr, initHavocs, nextExpr, nextHavocs, verificationConditions, axioms.toList, synthesisCtx, logic)
   }
 
   /** Add module specifications (properties) to the list of proof obligations */
@@ -1832,6 +1863,8 @@ class SymbolicSimulator (module : Module) {
             throw new Utils.AssertionError("HavocableNextIds should have eliminated by now.")
           case HavocableFreshLit(f) =>
             throw new Utils.AssertionError("Fresh literals must have been eliminated by now.")
+          case HavocableInstanceId(_) =>
+            throw new Utils.AssertionError("Havocable instance ids should have been eliminated by now.")
         }
       case AssignStmt(lhss,rhss) =>
         val es = rhss.map(i => evaluate(i, symbolTable, frameTable, frameNumber, scope));
@@ -1874,7 +1907,7 @@ class SymbolicSimulator (module : Module) {
       case ForStmt(_, _, _, _) => throw new Utils.AssertionError("Cannot symbolically execute for loops.")
       case WhileStmt(_, _, _) => throw new Utils.AssertionError("Cannot symbolically execute while loops.")
       case CaseStmt(_) => throw new Utils.AssertionError("Cannot symbolically execute case statement.")
-      case ProcedureCallStmt(id,lhss,args) => throw new Utils.AssertionError("Cannot symbolically execute procedure calls.")
+      case ProcedureCallStmt(id,lhss,args,instanceId,moduleId) => throw new Utils.AssertionError("Cannot symbolically execute procedure calls.")
       case ModuleCallStmt(_) => throw new Utils.AssertionError("Cannot symbolically execute module calls.")
     }
   }
@@ -1891,6 +1924,8 @@ class SymbolicSimulator (module : Module) {
           throw new Utils.AssertionError("HavocableNextIds should have been eliminated by now.")
         case HavocableFreshLit(f) =>
           throw new Utils.AssertionError("Fresh literals must have been eliminated by now.")
+        case HavocableInstanceId(_) =>
+          throw new Utils.AssertionError("Havocable instance ids should have been eliminated by now.")
       }
     case AssignStmt(lhss,rhss) =>
       return lhss.map(lhs => lhs.ident).toSet
@@ -1903,8 +1938,9 @@ class SymbolicSimulator (module : Module) {
     case WhileStmt(_, body, invs) => return writeSet(body)
     case CaseStmt(body) =>
       return body.foldLeft(Set.empty[Identifier]) { (acc,i) => acc ++ writeSet(i._2) }
-    case ProcedureCallStmt(id,lhss,args) =>
+    case ProcedureCallStmt(id,lhss,args,instanceId,moduleId) => {
       throw new Utils.RuntimeError("ProcedureCallStmt must have been inlined by now.")
+    }
     case ModuleCallStmt(id) =>
       throw new Utils.RuntimeError("ModuleCallStmt must have been inlined by now.")
   }

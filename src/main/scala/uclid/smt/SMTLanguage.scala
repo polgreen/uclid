@@ -39,6 +39,7 @@
 package uclid
 package smt
 import scala.collection.mutable.Map
+import scala.util.matching.Regex
 
 sealed trait Type extends Hashable {
   override val hashBaseId = 22575 // Random number. Not super important, must just be unique for each abstract base class.
@@ -88,7 +89,7 @@ case class BitVectorType(width: Int) extends Type
   override val hashId = mix(103, width)
   override val hashCode = computeHash
   override val md5hashCode = computeMD5Hash(width)
-  override def toString = "(BitVec " + (width.toString) + ")"
+  override def toString = "(_ BitVec " + (width.toString) + ")"
   override def isBitVector = true
   override val typeNamePrefix = "bv" + width.toString()
 }
@@ -353,45 +354,8 @@ case class BVZeroExtOp(w : Int, e : Int) extends BVResultOp(w) {
     Utils.assert((argW + e) == w, "Incorrect width for first operand to BVZeroExtOp.")
   }
 }
-case class BVLeftShiftIntOp(w : Int, e : Int) extends BVResultOp(w) {
-  override val hashId = mix(w, 217)
-  override val hashCode = computeHash
-  override val md5hashCode = computeMD5Hash(w, e)
-  override def toString = "(_ left_shift %d)".format(e)
-  override def typeCheck(args: List[Expr]) : Unit = {
-    checkNumArgs(args, 1)
-    Utils.assert(args.forall(_.typ.isBitVector), "Argument to left_shift must be a bitvector.")
-    val argW = args(0).typ.asInstanceOf[BitVectorType].width
-    Utils.assert(e > 0, "Shift amount for left_shift must be greater than zero.")
-    Utils.assert((argW) == w, "Incorrect width for first operand to BVLeftShiftIntOp.")
-  }
-}
-case class BVLRightShiftIntOp(w : Int, e : Int) extends BVResultOp(w) {
-  override val hashId = mix(w, 218)
-  override val hashCode = computeHash
-  override val md5hashCode = computeMD5Hash(w, e)
-  override def toString = "(_ l_right_shift %d)".format(e)
-  override def typeCheck(args: List[Expr]) : Unit = {
-    checkNumArgs(args, 1)
-    Utils.assert(args.forall(_.typ.isBitVector), "Argument to a_right_shift must be a bitvector.")
-    val argW = args(0).typ.asInstanceOf[BitVectorType].width
-    Utils.assert(e > 0, "Shift amount for l_right_shift must be greater than zero.")
-    Utils.assert((argW) == w, "Incorrect width for first operand to BVLRightShiftIntOp.")
-  }
-}
-case class BVARightShiftIntOp(w : Int, e : Int) extends BVResultOp(w) {
-  override val hashId = mix(w, 219)
-  override val hashCode = computeHash
-  override val md5hashCode = computeMD5Hash(w, e)
-  override def toString = "(_ a_right_shift %d)".format(e)
-  override def typeCheck(args: List[Expr]) : Unit = {
-    checkNumArgs(args, 1)
-    Utils.assert(args.forall(_.typ.isBitVector), "Argument to a_right_shift must be a bitvector.")
-    val argW = args(0).typ.asInstanceOf[BitVectorType].width
-    Utils.assert(e > 0, "Shift amount for a_right_shift must be greater than zero.")
-    Utils.assert((argW) == w, "Incorrect width for first operand to BVARightShiftIntOp.")
-  }
-}
+
+
 case class BVLeftShiftBVOp(w : Int) extends BVResultOp(w) {
   override val hashId = mix(w, 220)
   override val hashCode = computeHash
@@ -428,6 +392,18 @@ case class BVARightShiftBVOp(w : Int) extends BVResultOp(w) {
     Utils.assert((argW) == w, "Incorrect width for first operand to BVARightShiftBVOp.")
   }
 }
+case class BVUremOp(w : Int) extends BVResultOp(w) {
+  override val hashId = mix(w, 223)
+  override val hashCode = computeHash
+  override val md5hashCode = computeMD5Hash(w)
+  override def toString = "bvurem"
+}
+case class BVSremOp(w : Int) extends BVResultOp(w) {
+  override val hashId = mix(w, 224)
+  override val hashCode = computeHash
+  override val md5hashCode = computeMD5Hash(w)
+  override def toString = "bvsrem"
+}
 
 // Operators that return Booleans.
 abstract class BoolResultOp extends Operator {
@@ -448,14 +424,14 @@ case class ForallOp(vs : List[Symbol], patterns: List[List[Expr]]) extends Quant
   override val hashCode = computeHash(vs, patterns)
   override val md5hashCode = computeMD5Hash(vs, patterns)
   override def variables = vs
-  override def toString = "forall (" + Utils.join(vs.map(i => i.toString + ": " + i.typ.toString), ", ") + "): "
+  override def toString = "forall (" + Utils.join(vs.map(i => "(%s %s)".format(i.toString(), i.typ.toString())),"")+ ") "
 }
 case class ExistsOp(vs : List[Symbol], patterns: List[List[Expr]]) extends QuantifierOp {
   override val hashId = 216
   override val hashCode = computeHash(vs, patterns)
   override val md5hashCode = computeMD5Hash(vs, patterns)
   override def variables = vs
-  override def toString = "exists (" + Utils.join(vs.map(i => i.toString + ": " + i.typ.toString), ", ") + "): "
+  override def toString = "exists ("+ Utils.join(vs.map(i => "(%s %s)".format(i.toString(), i.typ.toString())),"")+ ") "
 }
 
 case object IffOp extends BoolResultOp {
@@ -701,11 +677,14 @@ case class IntLit(value: BigInt) extends Literal (IntType) {
 }
 
 case class BitVectorLit(value: BigInt, width: Int) extends Literal (BitVectorType.t(width)) {
-  Utils.assert(value.bitCount <= width, "Value (" + value.toString + ") too big for BitVector of width " + width + " bits.")
+  private val minWidth = value.bitLength + (if(value <= 0) 1 else 0)
+  Utils.assert(width >= minWidth, "Value (" + value.toString + ") too big for BitVector of width " + width + " bits.")
+  private val mask =  (BigInt(1) << width) - 1
+  private val twosComplement = if(value < 0) { ((~(-value)) & mask) + 1 } else value
   override val hashId = mix(value.hashCode(), mix(width, 301))
   override val hashCode = computeHash
   override val md5hashCode = computeMD5Hash(value, width)
-  override def toString = "(_ bv" + value.toString + " " + width.toString +")"
+  override def toString = "(_ bv" + twosComplement.toString + " " + width.toString +")"
 }
 
 case class BooleanLit(value: Boolean) extends Literal (BoolType) {
@@ -723,10 +702,19 @@ case class EnumLit(id : String, eTyp : EnumType) extends Literal (eTyp) {
 }
 
 case class Symbol(id: String, symbolTyp: Type) extends Expr (symbolTyp) {
+  // See <symbol> definition in the Concrete Syntax Appendix of the SMTLib Spec
+  assert(!id.contains("|"),  s"Invalid id $id contains escape character `|`")
+  assert(!id.contains("\\"), s"Invalid id $id contains `\\`")
   override val hashId = mix(id.hashCode(), mix(symbolTyp.hashCode(), 304))
   override val hashCode = computeHash
   override val md5hashCode = computeMD5Hash(id, symbolTyp)
-  override def toString = id.toString
+  override def toString = escape(id.toString)
+  // See <simple_symbol> definition in the Concrete Syntax Appendix of the SMTLib Spec
+  private val simple: Regex = raw"[a-zA-Z\+-/\*\=%\?!\.\$$_~&\^<>@][a-zA-Z0-9\+-/\*\=%\?!\.\$$_~&\^<>@]*".r
+  private def escape(name: String): String = name match {
+    case simple() => name
+    case _ => s"|$name|"
+  }
 }
 // const array.
 case class ConstArray(expr : Expr, arrTyp: ArrayType) extends Expr (arrTyp) {
@@ -784,7 +772,7 @@ case class LetExpression(letBindings : List[(Symbol, Expr)], expr : Expr) extend
   override val md5hashCode = computeMD5Hash(letBindings, expr)
   override def toString = {
     val bindings = Utils.join(letBindings.map(p => "(%s %s)".format(p._1.toString(), p._2.toString())), " ")
-    "(let (%s) %s)".format(bindings)
+    "(let (%s) %s)".format(bindings, expr)
   }
   override val isConstant = expr.isConstant
 }
@@ -818,9 +806,18 @@ case class DefineFun(id : Symbol, args : List[(Symbol)], e : Expr) extends Expr(
     "(define-fun %s (%s) %s %s)".format(id.toString(), argString, e.typ.toString(), e.toString())
   }
 }
+case class DeclareFun(id : Symbol, args : List[(Symbol)]) extends Expr(id.typ.asInstanceOf[MapType]) {
+  override val hashId = 314
+  override val hashCode = computeHash(id.toString, args.map(a => a.toString))
+  override val md5hashCode = computeMD5Hash(id, args)
+  override def toString = {
+    val argString = Utils.join(args.map(arg => "(%s %s)".format(arg.id.toString(), arg.symbolTyp.toString())), " ")
+    "(declare-fun %s (%s) %s)".format(id.toString(), argString, id.typ.asInstanceOf[MapType].outType.toString())
+  }
+}
 case class AssignmentModel(functions : List[Expr]) extends Hashable {
   override val hashBaseId = 22923
-  override val hashId = 314
+  override val hashId = 315
   override val hashCode = computeHash(functions.map(fun => fun.toString()))
   override val md5hashCode = computeMD5Hash(functions)
   override def toString = Utils.join(functions.map(fun => fun.toString()), " ")

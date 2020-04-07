@@ -137,6 +137,20 @@ class ParserSpec extends FlatSpec {
       // this list has all the errors from parsing
       case p : Utils.ParserErrorList =>
         assert (p.errors.size == 1)
+        assert (p.errors(0)._1.contains("Recursion"))
+    }
+  }
+  "test-recursion-2.ucl" should "not parse successfully." in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/test-recursion-2.ucl")), lang.Identifier("main"))
+      // should never get here.
+      assert (false);
+    }
+    catch {
+      // this list has all the errors from parsing
+      case p : Utils.ParserErrorList =>
+        assert (p.errors.size == 1)
+        assert (p.errors(0)._1.contains("Recursion"))
     }
   }
   "test-procedure-types-errors.ucl" should "not parse successfully." in {
@@ -225,8 +239,8 @@ class ParserSpec extends FlatSpec {
     catch {
       // this list has all the errors from parsing
       case p : Utils.ParserErrorList =>
-        assert (p.errors.size == 1)
-        assert (p.errors.exists(p => p._1.contains("Recursion involving procedures")))
+        assert (p.errors.size == 3)
+        assert (p.errors.exists(p => p._1.contains("Recursion involving procedure(s)")))
     }
   }
   "test-parsing-history-op-error.ucl" should "not parse successfully." in {
@@ -505,14 +519,23 @@ class ParserSpec extends FlatSpec {
         assert (p.errors(0)._1.contains("Trace select can only be used in a module-level expression"))
     }
   }
-  "test-hyperproperty-2.ucl" should "not parse successfully." in {
-    try {
+
+  /* This Test has been updated to not throw an error as trace selects are allowed inside procedural contexts. */
+
+  // "test-hyperproperty-2.ucl" should "not parse successfully." in {
+  //   try {
+  //     val fileModules = UclidMain.compile(List(new File("test/test-hyperproperty-2.ucl")), lang.Identifier("main"))
+  //     assert (false)
+  //   } catch {
+  //     case p : Utils.ParserErrorList =>
+  //       assert (p.errors(0)._1.contains("Trace select can only be used in a verification expression"))
+  //   }
+  // }
+  
+  "test-hyperproperty-2.ucl" should "should parse successfully." in {
       val fileModules = UclidMain.compile(List(new File("test/test-hyperproperty-2.ucl")), lang.Identifier("main"))
-      assert (false)
-    } catch {
-      case p : Utils.ParserErrorList =>
-        assert (p.errors(0)._1.contains("Trace select can only be used in a verification expression"))
-    }
+      val instantiatedModules = UclidMain.instantiateModules(UclidMain.Config(), fileModules, lang.Identifier("main"))
+      assert (instantiatedModules.size == 1)
   }
   "test-hyperproperty-3.ucl" should "not parse successfully." in {
     try {
@@ -561,4 +584,117 @@ class ParserSpec extends FlatSpec {
         assert (p.errors(0)._1.contains("Trace select can only be applied on an identifier"))
     }
   }
+
+  "syntax-error-input-assign-1.ucl" should "not parse successfully." in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/syntax-error-input-assign-1.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+      case p : Utils.ParserErrorList =>
+        assert (p.errors(0)._1.contains("is a readonly entity and cannot be assigned to"))
+    }
+  }
+
+  "syntax-error-input-assign-2.ucl" should "not parse successfully." in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/syntax-error-input-assign-2.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+      case p : Utils.ParserErrorList =>
+        assert (p.errors(0)._1.contains("is a readonly entity and cannot be assigned to"))
+    }
+  }
+  
+  "test-func-import-5.ucl" should "not parse successfully" in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/test-func-import-5.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+      case e : Utils.ParserError => assert(e.msg.contains("Redeclaration error"))
+    }
+  }
+
+  "test-func-import-6.ucl" should "not parse successfully" in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/test-func-import-6.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+      case e : Utils.ParserError  => assert(e.msg.contains("Trying to import from a module that does not"))
+    }
+  }
+
+  "test-func-import-7.ucl" should "not parse successfully" in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/test-func-import-7.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+        case e : Utils.ParserError => assert(e.msg.contains("Trying to import from the same module"))
+    }
+  }
+
+  "test-const-import-5.ucl" should "not parse successfully" in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/test-const-import-5.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+      case e : Utils.ParserError => assert(e.msg.contains("Trying to import from a module that does not"))
+    }
+  }
+
+  "test-const-import-6.ucl" should "not parse successfully" in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/test-const-import-6.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+      case e : Utils.ParserError => assert(e.msg.contains("Trying to import from the same module"))
+    }
+  }
+
+  "test-def-import-0.ucl" should "parse successfully." in {
+    val fileModules = UclidMain.compile(List(new File("test/test-def-import-0.ucl")), lang.Identifier("main"))
+    val instantiatedModules = UclidMain.instantiateModules(UclidMain.Config(), fileModules, lang.Identifier("main"))
+    assert (instantiatedModules.size == 1)
+  }
+
+  "test-def-import-1.ucl" should "not parse successfully" in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/test-def-import-1.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+      case p : Utils.ParserErrorList =>
+        assert (p.errors.exists(p => p._1.contains("Redeclaration")))
+    }
+  }
+
+  "test-def-import-2.ucl" should "not parse successfully" in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/test-def-import-2.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+      case e : Utils.ParserError => assert(e.msg.contains("Trying to import from a module that does not"))
+    }
+  }
+
+  "test-instance-procedure-call-6.ucl" should "not parse successfully" in {
+    try {
+      val fileModules = UclidMain.compile(List(new File("test/test-instance-procedure-call-6.ucl")), lang.Identifier("main"))
+      assert (false)
+    } catch {
+      case p : Utils.ParserErrorList =>
+        assert (p.errors.exists(p => p._1.contains("does not exist in the context. Double check")))
+    }
+  }
+
+  "test-instance-procedure-call-2.ucl" should "parse successfully." in {
+    val fileModules = UclidMain.compile(List(new File("test/test-instance-procedure-call-2.ucl")), lang.Identifier("main"))
+    val instantiatedModules = UclidMain.instantiateModules(UclidMain.Config(), fileModules, lang.Identifier("main"))
+    assert (instantiatedModules.size == 1)
+  }
+
+  "issue-187a.ucl" should "parse successfully." in {
+    val fileModules = UclidMain.compile(List(new File("test/issue-187a.ucl")), lang.Identifier("main"))
+    val instantiatedModules = UclidMain.instantiateModules(UclidMain.Config(), fileModules, lang.Identifier("main"))
+    assert (instantiatedModules.size == 1)
+  }
+
 }

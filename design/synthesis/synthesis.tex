@@ -1,0 +1,257 @@
+\documentclass[acmsmall]{acmart}
+\settopmatter{printfolios=true,printccs=false,printacmref=false}
+\acmJournal{PACMPL}
+\acmVolume{1}
+\acmNumber{CONF}
+\acmArticle{1}
+\acmYear{2019}
+\acmMonth{10}
+\acmDOI{}
+\startPage{1}
+\setcopyright{none}
+\bibliographystyle{ACM-Reference-Format}
+
+\usepackage{amsmath,amsthm,amssymb,amsfonts}
+\usepackage{subcaption}
+
+\usepackage{syntax}
+\usepackage{hypernat}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{xspace}
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage{comment}
+\usepackage{xifthen}
+\usepackage{listings}
+\usepackage{courier}
+\usepackage{newfloat}
+\usepackage{fancyvrb}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{darkmagenta}{rgb}{0.55,0,0.55}
+
+\newcommand{\uclid}{{\textsc{Uclid5}}\xspace}
+\newcommand{\smtlib}{{\textsc{smt-lib}}\xspace}
+\newcommand{\sygusif}{{\textsc{s}y\textsc{g}u\textsc{s-if}}\xspace}
+\newcommand{\llamalib}{{\textsc{synth-lib}}\xspace}
+\newcommand{\keyword}[1]{\textcolor{darkmagenta}{\texttt{#1}}}
+\newcommand{\ident}[1]{\textcolor{black}{\texttt{#1}}}
+\newcommand{\keywordbf}[1]{\textcolor{darkmagenta}{\texttt{{#1}}}}
+\newcommand{\proofcmd}[1]{\textcolor{blue}{\texttt{{#1}}}}
+\newcommand{\codelike}[1]{\texttt{#1}}
+
+\lstdefinelanguage{uclid}{
+  sensitive = true,
+  keywords={module, forall, exists, Lambda, if, else, assert, assume, havoc,
+            for, range, skip, case, esac, init, next, control, function, procedure,
+            returns, call, define, type, var, input, output, const, property,
+            invariant, synthesis, grammar, requires, ensures, modifies, instance, axiom, 
+            enum, record, integer, boolean, true, false},
+  numbers=left,
+  numberstyle=\footnotesize,
+  stepnumber=1,
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=top,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+}
+
+\lstdefinelanguage{smt}{
+  sensitive = false,
+  keywords={declare, fun, synth, check, assert, sat, blocking, define, constraint},
+  numbers=left,
+  numberstyle=\footnotesize,
+  stepnumber=1,
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=top,
+  comment=[l]{;},
+}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{1.0,1.0,1.0}
+
+\lstdefinestyle{uclidstyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\footnotesize,
+  breakatwhitespace=false,
+  basicstyle=\footnotesize\ttfamily,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  numbers=left,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2,
+  frame=shadowbox
+}
+
+\begin{document}
+\title{Program Synthesis For Verification in \uclid}
+\author{Federico Mora}
+\affiliation{
+  \institution{University of California, Berkeley}
+}
+\email{fmora@berkeley.edu}
+
+\author{Elizabeth Polgreen}
+\affiliation{
+  \institution{University of California, Berkeley}
+}
+\email{epolgreen@berkeley.edu}
+
+\author{Sanjit A. Seshia}
+\affiliation{
+  \institution{University of California, Berkeley}
+}
+\email{sseshia@eecs.berkeley.edu }
+
+\begin{abstract} This document describes synthesis in \uclid, \uclid's
+intermediate synthesis language, and \uclid's interface to external synthesis
+engines. \end{abstract}
+
+\keywords{}
+\maketitle 
+
+\section{Verification With Holes.} Formal verification is a time consuming and
+tedious task. Verification users need to model their system, annotate it
+thoroughly, and formally specify its behavior. \uclid alleviates this burden on
+verification users through program synthesis. In \uclid, users can declare
+unknown functions and use these functions in models, specifications, or
+annotations. At verification time, \uclid will automatically find
+implementations for these functions that achieve the desired verification goal.
+
+Take for example the \uclid model in Fig.~\ref{ex:fib}. The (hypothetical)
+user wants to prove the invariant \codelike{a\_le\_b} using induction, but
+finds that the proof fails. At this point the user has two options: they can
+either manually strengthen the inductive argument, or they can ask \uclid to
+automatically do this for them. Fig.~\ref{ex:fib-hole} demonstrates the
+latter. In this example, the user specifies a function to synthesize called
+\codelike{h} and conjuncts the existing invariant with a call to \codelike{h}.
+Given this model, \uclid will automatically generate the function
+\codelike{h(x, y) = x >= 0}, which completes the induction proof.
+
+\section{Intermediate Synthesis Language.} We propose a new intermediate
+synthesis language, \llamalib, tailored to verification with holes. The language
+is \smtlib, but with one extra command taken from \sygusif:
+\keyword{synth-blocking-fun}. The syntax for the command is
+$$(\text{\keyword{synth-blocking-fun}} \; \langle \text{fname} \rangle \; ((
+\langle \text{argname} \rangle \; \langle \text{argsort} \rangle )^* ) \;
+\langle \text{rsort} \rangle \; \langle \text{grammar}\rangle?)$$ where
+$\langle \text{fname} \rangle$ is the name of the function, $\langle
+\text{argname} \rangle$ is the name of an argument, $\langle \text{argsort}
+\rangle$ is the sort of the corresponding argument, there are zero or more
+arguments, $\langle \text{rsort} \rangle$ is the sort returned by the function,
+and $\langle \text{grammar} \rangle$ is an optional syntactic specification for
+the function body.
+
+The semantics of \llamalib is exactly that of \smtlib when no function to
+synthesize is on the assertion stack. When the assertion stack does contain a
+function to synthesize, the meaning of the command \keyword{check-sat} differs.
+In particular, \keyword{check-sat} will return \codelike{sat} if for each
+function to synthesize on the assertion stack the solver finds a function that
+adheres to the grammar, and the corresponding \smtlib query with these function
+plugged-in returns \codelike{unsat}. These functions are the satisfying model:
+the \keyword{get-model} command will return them. If no such functions exist,
+then \keyword{check-sat} will return \codelike{unsat}. If the solver is unable
+to conclude \codelike{sat} or \codelike{unsat}, it will return
+\codelike{unknown}. Intuitively, a \llamalib query with a single
+\keyword{synth-blocking-fun} declaration asks ``is there a function that makes
+this underlying \smtlib query unsatisfiable?''
+
+\section{From \uclid to \llamalib} \uclid, without synthesis, encodes each
+property violation as a separate \smtlib query. Let's call the $i^{th}$
+property violation $P_i(x_{0}\;...\; x_{m})$, and take the $i^{th}$ \smtlib
+query to be checking the validity of $\exists x_{0}\;...\; x_{m} \;
+P_i(x_{0}\;...\; x_{m})$, where $P_i$ contains no free variables. If any
+$\exists x_{0}\;...\; x_{m} \; P_i(x_{0}\;...\; x_{m})$ is valid, then \uclid
+determines that the verification failed. In other words, verification succeeds
+iff $\neg \exists x_{0}\;...\; x_{m}\; \bigvee_{i=0}^{i=n} P_i(x_{0}\;...\;
+x_{m})$ is valid (we can do this step because existential quantifiers
+distribute over disjunction). This is the encoding into \smtlib that most
+verification tools use.
+
+With synthesis, \uclid checks a version of this expression directly rather than
+checking each property individually. More specifically, \uclid constructs a
+\llamalib query representing the validity of $ \exists f \; \neg \exists
+x_{0}\;...\; x_{m}\; \bigvee_{i=0}^{i=n} P_i(f, x_{0}\;...\; x_{m})$, where
+each $P_i$ encodes a property violation that may refer to a function to
+synthesize, $f$. That is, all we have to do to enable synthesis is declare and
+use an unknown function.
+
+Fig.~\ref{ex:fib-smt} and Fig.~\ref{ex:fib-synth} show two examples.
+Fig.~\ref{ex:fib-smt} shows the \llamalib query for the verification by
+induction of the \uclid program in Fig.~\ref{ex:fib}---it is the same as an
+\smtlib query because there is no function to synthesize.
+Fig.~\ref{ex:fib-synth} shows the \llamalib query for verification by induction
+of the \uclid program in Fig.~\ref{ex:fib-hole}. A synthesis engine might solve
+the query in Fig.~\ref{ex:fib-synth} by finding the function
+\codelike{(define-fun h ((x Int) (y Int)) Bool (>= x 0))}. We know this is a
+correct solution because the corresponding \smtlib query, displayed in
+Fig.~\ref{ex:fib-sol}, is unsatisfiable.
+
+\section{Interface to Synthesis Engines.} Unfortunately, existing synthesis
+engines do not support \llamalib, so we have to encode the query in \sygusif.
+We do this with these four rewrite rules \begin{align} (\text{assert} \; a)
+&\rightarrow (\text{constraint} \; (\text{not} \; a))\\ (\text{declare-fun} \;
+a \;(s_0 \;...\; s_{n-1})\; s_n) &\rightarrow (\text{declare-var} \; a \; s_0
+\;\text{-> ... ->}\; s_n)\\ \text{synth-blocking-fun} &\rightarrow
+\text{synth-fun} \\ \text{check-sat} &\rightarrow \text{check-synth}.
+\end{align} The first rewrite rule is the most important. It implements the
+following equivalence $$ \exists f \; \neg \exists x_{0}\;...\; x_{m}\;
+\bigvee_{i=0}^{i=n} P_i(f, x_{0}\;...\; x_{m}) \equiv \exists f \; \forall
+x_{0}\;...\; x_{m}\; \bigwedge_{i=0}^{i=n} \neg P_i(f, x_{0}\;...\; x_{m}).$$
+The left hand side of the equivalence corresponds to the kind of queries that
+\llamalib solves, whereas the right hand side corresponds to the kind of
+queries that \sygusif solves.
+
+\clearpage
+\section{Figures}
+\begin{figure}[h]
+  \lstinputlisting[language=uclid,style=uclidstyle]{../../examples/tutorial/ex4.1-fib-induction.ucl}
+  \caption{\uclid Fibonacci model}
+  \label{ex:fib}
+\end{figure}
+\begin{figure}[h]
+  \lstinputlisting[language=uclid,style=uclidstyle]{../../examples/ex1-fib-induction.ucl}
+  \caption{\uclid Fibonacci model with a hole}
+  \label{ex:fib-hole}
+\end{figure}
+\begin{figure}[h]
+    \lstinputlisting[language=smt,style=uclidstyle]{old.smt2}
+    \caption{Induction query for Fig.~\ref{ex:fib}}
+    \label{ex:fib-smt}
+\end{figure}
+\begin{figure}[h]
+    \lstinputlisting[language=smt,style=uclidstyle]{query.synth}
+    \caption{Induction query of Fig.~\ref{ex:fib-hole}}
+    \label{ex:fib-synth}
+\end{figure}
+\begin{figure}[h]
+    \lstinputlisting[language=smt,style=uclidstyle]{solution.smt2}
+    \caption{Solution to Fig.~\ref{ex:fib-synth}}
+    \label{ex:fib-sol}
+\end{figure}
+\begin{figure}[h]
+    \lstinputlisting[language=smt,style=uclidstyle]{sygus.sl}
+    \caption{\sygusif for Fig.~\ref{ex:fib-synth}}
+    \label{ex:fib-sygusif}
+\end{figure}
+\end{document}

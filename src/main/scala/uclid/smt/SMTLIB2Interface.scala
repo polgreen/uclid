@@ -67,7 +67,7 @@ trait SMTLIB2Base {
   }
   def generateInputDataTypes(t : Type) : (List[String]) = {
     t match {
-      case MapType(inputTyp, outputType) =>
+      case MapType(inputTyp, _) =>
         inputTyp.foldLeft(List.empty[String]) {
           (acc, typ) => {
             acc :+ generateDatatype(typ)._1;
@@ -130,7 +130,7 @@ trait SMTLIB2Base {
             (typeStr, List.empty)
           case MapType(inTypes, outType) =>
             val (typeStr, newTypes1) = generateDatatype(outType)
-            val (inputTypeStrs, newTypes) = inTypes.foldRight((List.empty[String], newTypes1)) {
+            val (_, newTypes) = inTypes.foldRight((List.empty[String], newTypes1)) {
               (typ, acc) => {
                 val (typeStr, newTypes2) = generateDatatype(typ)
                 (acc._1 :+ typeStr, acc._2 ++ newTypes2)
@@ -377,7 +377,7 @@ class SMTLIB2Interface(args: List[String]) extends Context with SMTLIB2Base {
     val declCommands = new ListBuffer[String]()
     Context.findTypes(e).filter(typ => !typeMap.contains(typ)).foreach {
       newType => {
-        val (typeName, newTypes) = generateDatatype(newType)
+        val (_, newTypes) = generateDatatype(newType)
         newTypes.foreach(typ => declCommands.append(typ))
       }
     }

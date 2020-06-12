@@ -44,8 +44,8 @@ object ExpressionAnalyzer {
   var z3ConstInterface = new Z3Interface()
   def getConstIntValue(expr : smt.Expr) : Option[Int] = {
     Utils.assert(expr.typ.isInt, "Expected an integer-sorted expression.")
-    val smtExpr1 = Converter.renameSymbols(expr, (s, t) => s + "_1")
-    val smtExpr2 = Converter.renameSymbols(expr, (s, t) => s + "_2")
+    val smtExpr1 = Converter.renameSymbols(expr, (s, _) => s + "_1")
+    val smtExpr2 = Converter.renameSymbols(expr, (s, _) => s + "_2")
     z3ConstInterface.push()
     z3ConstInterface.assert(smt.OperatorApplication(smt.InequalityOp, List(smtExpr1, smtExpr2)))
     val smtResult = z3ConstInterface.check()

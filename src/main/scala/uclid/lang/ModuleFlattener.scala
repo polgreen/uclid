@@ -643,7 +643,6 @@ extends ASTRewriter(passName, new ModuleInstantiatorPass(module, inst, targetMod
      *
      */
     override def visitModifiableEntity(modifiable : ModifiableEntity, context : Scope) : Option[ModifiableEntity] = {
-      val instVarMap = pass.asInstanceOf[ModuleInstantiatorPass].instVarMap
       val modifiableP = modifiable match {
         case ModifiableId(id) => {
           visitIdentifier(id, context).flatMap((idP) => {

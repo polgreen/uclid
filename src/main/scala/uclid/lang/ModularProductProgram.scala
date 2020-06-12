@@ -254,7 +254,7 @@ class ModularProductProgramPass extends RewritePass {
             oldVars.foreach{ x => x match {
                 case dec : BlockVarsDecl => val oldVariables = dec.ids 
                                             val varType = dec.typ
-                                            var newIdentifiers = ListBuffer[Identifier]()
+                                            val newIdentifiers = ListBuffer[Identifier]()
                                             oldVariables.foreach{
                                                 variable => variable match {
                                                     case v : Identifier =>  
@@ -278,10 +278,10 @@ class ModularProductProgramPass extends RewritePass {
             def addDeclarationsToMap(blocknum: Int, blockVars:  List[BlockVarsDecl]) = {
                 if(!blockVars.isEmpty) {
                     val context = Scope.empty + blockVars
-                    var newdeclList = ListBuffer[BlockVarsDecl]()
+                    val newdeclList = ListBuffer[BlockVarsDecl]()
                     blockVars.foreach{ x => x match {
                         case decl : BlockVarsDecl =>
-                            var idBuffer = new ListBuffer[Identifier]()
+                            val idBuffer = new ListBuffer[Identifier]()
                             for( variable <- decl.ids)
                                 for( i <- 0 until k)
                                     idBuffer += getRenamedExpr(variable, context, i).asInstanceOf[Identifier]

@@ -280,10 +280,10 @@ object Converter {
            throw new Utils.RuntimeError("Should never get here.")
        }
        // Unimplemented operators.
-       case lang.Lambda(ids,le) =>
+       case lang.Lambda(_,_) =>
          throw new Utils.UnimplementedException("Lambdas are not yet implemented.")
        // Troublesome operators.
-       case lang.FreshLit(t) =>
+       case lang.FreshLit(_) =>
          throw new Utils.RuntimeError("Should never get here. FreshLits must have been rewritten by this point.")
        case lang.ExternalIdentifier(_, _) =>
          throw new Utils.RuntimeError("Should never get here. ExternalIdentifiers must have been rewritten by this point.")

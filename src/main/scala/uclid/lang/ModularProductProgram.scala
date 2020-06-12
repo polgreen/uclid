@@ -22,8 +22,8 @@ class ModularProductHelper {
 
     def addToRenameVariableMap(k:Int, paramlist: List[(Identifier, Type)]): Unit = {
         if(!paramlist.isEmpty) {
-            var variable = paramlist.head
-            var keyArray = new Array[Identifier](k)
+            val variable = paramlist.head
+            val keyArray = new Array[Identifier](k)
             for( i <- 0 until k)
                 keyArray(i) = Identifier(variable._1.toString + "." + (i+1).toString)
             mapOfRenamedVariables +=(variable -> keyArray)
@@ -62,9 +62,9 @@ class ModularProductProgramPass extends RewritePass {
 
     def modularProduct(k:Int, proc : ProcedureDecl, helperObj: ModularProductHelper, ctxx: Scope): ProcedureDecl = {
 
-        var newVarDeclarations = ListBuffer[BlockVarsDecl]()    //contains activationDecarations in proc body
-        var newRequiresList = ListBuffer[Expr]()                //contains modified preconditions     
-        var newEnsuresList = ListBuffer[Expr]()                 //contains modified postconditions
+        val newVarDeclarations = ListBuffer[BlockVarsDecl]()    //contains activationDecarations in proc body
+        val newRequiresList = ListBuffer[Expr]()                //contains modified preconditions     
+        val newEnsuresList = ListBuffer[Expr]()                 //contains modified postconditions
         var newModifiesList = Set[ModifiableEntity]()                 //unused now. Can be used later if module variables are supported
         
 

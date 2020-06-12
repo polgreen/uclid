@@ -69,7 +69,7 @@ class ModularProductProgramPass extends RewritePass {
         
 
         def createActivationVariables(k: Int, actVariableMap: mutable.Map[Int, Array[Identifier]], level: Int): BlockVarsDecl = {
-            var keyArray = new Array[Identifier](k) //0 to k-1
+            val keyArray = new Array[Identifier](k) //0 to k-1
     
             /* Activation Variables are named in this manner 
                 actVari_j --> where i corresponds to level/scope and j corresponds to the jth copy of execution
@@ -94,7 +94,7 @@ class ModularProductProgramPass extends RewritePass {
                 newVari_j --> where i corresponds to level/scope and j corresponds to the jth copy of execution
             */
 
-            var listOfIdentifiers = ListBuffer[Identifier]()
+            val listOfIdentifiers = ListBuffer[Identifier]()
             val datatype = typ
             for ( i <- 0 until k)
             {
@@ -206,10 +206,10 @@ class ModularProductProgramPass extends RewritePass {
             def collectRenamedVariablesFromBlockVars(vars: List[BlockVarsDecl]):Unit = {
                 if(!vars.isEmpty)
                 {
-                    var variables = vars.head
+                    val variables = vars.head
                     for( variable <- variables.ids)
                     {
-                        var keyArray = new Array[Identifier](k)
+                        val keyArray = new Array[Identifier](k)
                         for( i <- 0 until k)
                             keyArray(i) = Identifier(variable.toString + "." + (i+1).toString)
 
@@ -248,7 +248,7 @@ class ModularProductProgramPass extends RewritePass {
 
         /* It takes a BlockVarsDecl to create a new BlockVarsDecl with renamed versions of variables */
         def getLocalVarDeclarations(oldVars: List[BlockVarsDecl]): List[BlockVarsDecl] = {
-            var blockdecls = ListBuffer[BlockVarsDecl]()
+            val blockdecls = ListBuffer[BlockVarsDecl]()
             var context = Scope.empty
             context += oldVars
             oldVars.foreach{ x => x match {

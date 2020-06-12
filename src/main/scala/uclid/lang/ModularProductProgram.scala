@@ -797,7 +797,6 @@ class ModularProductProgramPass extends RewritePass {
                             }
                             
                             helperObj.maxScope+=1
-                            var remainingwhilebody = ListBuffer[Statement]()
                             translateBody(helperObj.maxScope, List(body), whilebody, context)
                             val emptyVarsList: List[BlockVarsDecl] = List()
                             val whilebodyblock = BlockStmt(emptyVarsList, whilebody.toList)

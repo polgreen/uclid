@@ -511,10 +511,6 @@ class SMTLIB2Interface(args: List[String]) extends Context with SMTLIB2Base {
     throw new Utils.UnimplementedException("Can't use an SMT solver for synthesis!")
   }
 
-  def toSMT2(e : Expr, assumptions : List[Expr], name : String) : String = {
-    throw new Utils.UnimplementedException("toSMT2 is not yet implemented.")
-  }
-
   override def toString() : String = {
     solverProcess.toString()
   }

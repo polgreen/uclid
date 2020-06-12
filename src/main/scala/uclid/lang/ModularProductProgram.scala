@@ -404,17 +404,6 @@ class ModularProductProgramPass extends RewritePass {
 
             def modifyEnsures(ensuresList: List[Expr], newEnsuresList: ListBuffer[Expr]) = modifyRequires(ensuresList, newEnsuresList) 
 
-            def modifyModifies(modifiesList: Set[ModifiableEntity]): Unit = {
-                var context = Scope.empty
-                context += proc
-                // There should be no Modifiable Instance Id at this point
-                for (modId <- modifiesList) {
-                    for(i <- 0 until k )
-                        newModifiesList += ModifiableId(getRenamedExpr(modId.asInstanceOf[ModifiableId].id, context, i).asInstanceOf[Identifier])
-                }
-            }
-            
-
             modifyRequires(proc.requires, newRequiresList)
             modifyEnsures(proc.ensures, newEnsuresList)
             if(proc.modifies.size != 0)

@@ -191,7 +191,6 @@ abstract trait Context {
             val synMapP = synMap.addSynonym(typeName, enumType)
             (synMapP.get(typeName).get, synMapP)
           case synTyp : SynonymType =>
-            val typeName = synTyp.name
             val (newType, synMapP1) = flatten(synTyp.typ, synMap)
             val synMapP = synMapP1.addSynonym(synTyp.name, newType)
             (newType, synMapP)

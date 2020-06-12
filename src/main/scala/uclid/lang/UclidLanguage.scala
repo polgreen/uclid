@@ -957,7 +957,7 @@ case class EnumType(ids_ : List[Identifier]) extends Type {
     ids.tail.foldLeft(ids.head.toString) {(acc,i) => acc + "," + i} + "}"
   override def defaultValue = {
     ids match {
-      case hd :: tl => Some(hd)
+      case hd :: _ => Some(hd)
       case _ => None
     }
   }

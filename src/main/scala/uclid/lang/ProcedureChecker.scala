@@ -90,7 +90,6 @@ class ProcedureCheckerPass extends ReadOnlyPass[Set[ModuleError]]
           call.instanceId match {
             case Some(iid) => {
               val instOption = context.module.get.instances.find(inst => inst.instanceId == iid)
-              val instMod = context.get(instOption.get.moduleId).get.asInstanceOf[Scope.ModuleDefinition].mod
               checkIdent(proc, instOption.get.instanceId, call.position, context, in)
             }
             case _ => {

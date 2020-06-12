@@ -186,8 +186,8 @@ object ReplacePolymorphicOperators {
     def rs(es : List[Expr])  = es.map(r(_))
 
     e match {
-      case i : Identifier => e
-      case ei : ExternalIdentifier => e
+      case _ : Identifier => e
+      case _ : ExternalIdentifier => e
       case _ : Literal => e
       case Tuple(es) => Tuple(es.map(r(_)))
       case OperatorApplication(op, operands) =>

@@ -154,7 +154,6 @@ object StatementScheduler {
         val namedExpr = namedExprOpt.get
         Utils.assert(namedExpr.isInstanceOf[Scope.Instance], "Must be a module instance: " + id.toString())
         val instD = namedExpr.asInstanceOf[Scope.Instance].instD
-        val moduleType : ModuleType = instD.modType.get.asInstanceOf[ModuleType]
         instD.outputMap.map(p => p._3.asInstanceOf[Identifier]).toSet
     }
   }
@@ -172,7 +171,7 @@ object StatementScheduler {
       case OperatorApplication(ArraySelect(inds), exps) => readSets(inds) ++ readSets(exps)
       case OperatorApplication(ArrayUpdate(inds, exp), exps) => readSets(inds) ++ readSet(exp) ++ readSets(exps)
       case OperatorApplication(_, es) => readSets(es)
-      case ConstArray(e, t) => readSet(e)
+      case ConstArray(e, _) => readSet(e)
       case FuncApplication(e, args) => readSet(e) ++ readSets(args)
       case Lambda(_, expr) => readSet(expr)
     }
@@ -185,7 +184,7 @@ object StatementScheduler {
       case SkipStmt() => Set.empty
       case AssertStmt(e, _) => readSet(e)
       case AssumeStmt(e, _) => readSet(e)
-      case HavocStmt(h) => Set.empty
+      case HavocStmt(_) => Set.empty
       case AssignStmt(_, rhss) => readSets(rhss)
       case BlockStmt(vars, stmts) =>
         val declaredVars : Set[Identifier] = vars.flatMap(vs => vs.ids.map(v => v)).toSet

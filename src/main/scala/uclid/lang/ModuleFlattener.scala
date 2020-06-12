@@ -426,7 +426,7 @@ class ModuleInstantiatorPass(module : Module, inst : InstanceDecl, targetModule 
       case ModifiableInstanceId(_)  => true
     }).flatMap(m => m match {
       case ModifiableId(id) => Some((m, NameProvider.get("modifies_" + id.toString())))
-      case ModifiableInstanceId(_) => {
+      case ModifiableInstanceId(opapp) => {
         instVarMap.get(flattenSelectFromInstance(opapp)) match {
           case Some(name) => Some((m, NameProvider.get("modifies_" + name)))
           // Not in the current instance we are flattening

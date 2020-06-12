@@ -48,8 +48,6 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import com.typesafe.scalalogging.Logger
 import uclid.smt.{Z3HornSolver, Z3Interface}
 
-import scala.collection.mutable.{Map => MutableMap}
-import org.scalactic.source.Position
 import scala.util.parsing.input.NoPosition
 
 object UniqueIdGenerator {
@@ -142,7 +140,6 @@ class SymbolicSimulator (module : Module) {
     Utils.assert(simTbl.size > 0, "Must have at least one array of frames")
     val numFrames = simTbl(0).size
     Utils.assert(simTbl.forall(frameTbl => frameTbl.size == numFrames), "Must have the same number of frames in each trace")
-    val numTraces = simTbl.size
     (1 to numFrames).toArray.map {
       (frameIndex) => {
         val symTbl0 : SymbolTable = simTbl(0)(frameIndex)
@@ -252,9 +249,6 @@ class SymbolicSimulator (module : Module) {
             }
             val assumptionFilter = createNoLTLFilter(preStateProperties)
             val propertyFilter = createNoLTLFilter(commandProperties)
-            def postAssumptionFilter(name : Identifier, decorators : List[ExprDecorator]) : Boolean = {
-              !ExprDecorator.isLTLProperty(decorators) && (commandAssumeProperties.contains(name))
-            }
             
             assertLog.debug("preStateProperties: {}", preStateProperties.toString())
 
@@ -586,8 +580,8 @@ class SymbolicSimulator (module : Module) {
     val lazySc = new LazySCSolver(this)
     val initTaintLambda = lazySc.getTaintInitLambdaV2(init_lambda._1, scope, context, init_lambda._5)
     val nextTaintLambda = lazySc.getNextTaintLambdaV2(next_lambda._1, next_lambda._5, next_lambda._6, next_lambda._4, scope)
-    val combinedInitLambda = lazySc.getCombinedInitLambda(init_lambda._1, initTaintLambda)
-    val combinedNextLambda = lazySc.getCombinedNextLambda(next_lambda._1, nextTaintLambda._1)
+    // val combinedInitLambda = lazySc.getCombinedInitLambda(init_lambda._1, initTaintLambda)
+    // val combinedNextLambda = lazySc.getCombinedNextLambda(next_lambda._1, nextTaintLambda._1)
     //h.convertHyperInvToTaint(next_lambda._1, next_lambda._4)
     //h.solveTaintLambdasV2(combinedInitLambda, combinedNextLambda, scope)
     h.solveLambdas(init_lambda._1, next_lambda._1, init_lambda._5, init_lambda._2, init_lambda._4, next_lambda._4, next_lambda._5, next_lambda._2, scope)
@@ -994,7 +988,6 @@ class SymbolicSimulator (module : Module) {
       case smt.ConstArray(v, arrTyp) => List()
       case smt.MakeTuple(args) => args.flatMap(e => getHavocs(e))
       case opapp : smt.OperatorApplication =>
-        val op = opapp.op
         val args = opapp.operands.flatMap(exp => getHavocs(exp))
         //UclidMain.println("Crashing Here" + op.toString)
         args
@@ -1049,12 +1042,7 @@ class SymbolicSimulator (module : Module) {
 
   def substitute(e: smt.Expr, s: List[(smt.Expr, smt.Expr)]): smt.Expr = {
     val m = s.map(p => p._1 -> p._2).toMap
-    def rewrite(ex: smt.Expr) : smt.Expr = {
-      m.get(ex) match {
-        case Some(eX) => eX
-        case None => ex
-      }
-    }
+
     s.foldLeft(e)((acc, p) => _substitute(acc, p))
     //var memo: MutableMap[smt.Expr, smt.Expr] = MutableMap.empty
     //smt.Context.rewriteExpr(e, rewrite, memo)

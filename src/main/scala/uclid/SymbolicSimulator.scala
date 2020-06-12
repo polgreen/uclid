@@ -1196,7 +1196,6 @@ class SymbolicSimulator (module : Module) {
       defaultLog.debug("eqStates: {}", eqStates.toString())
       currentState = renameStates(symTableP, eqStates, step + startStep, scope, addAssumptionToTree _)
       val numPastFrames = frameList.size
-      val pastTables = ((0 to (numPastFrames - 1)) zip frameList).map(p => ((numPastFrames - p._1) -> p._2)).toMap
       frameList += currentState
       val simTbl = ArrayBuffer(frameList)
       // FIXME: simTable

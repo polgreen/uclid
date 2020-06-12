@@ -132,7 +132,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     log.debug("The init hyperAssumes " + hyperAssumes.toString)
     log.debug("The init lambda " + init_lambda.toString)
     val taint_vars = init_lambda.ids.map(sym => getNewTaintSymbol(sym))
-    var additionalConstraints = new ArrayBuffer[smt.Expr]()
+    val additionalConstraints = new ArrayBuffer[smt.Expr]()
 
     val initSymTab1 = simulator.newInputSymbols(simulator.getInitSymbolTable(scope), 0, scope)
     val initSymTab2 = simulator.newInputSymbols(simulator.getInitSymbolTable(scope), 1, scope)
@@ -354,16 +354,6 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
   }
 
   def getTaintExprs(nextLambda: smt.Lambda, prevTaintVars: Map[smt.Expr, List[smt.Symbol]], nextTaintVars: Map[smt.Expr, List[smt.Symbol]]) = {
-
-    // val nextArrayVars = nextLambda.ids.takeRight(nextLambda.ids.length / 2).filter(sym => sym.typ match {
-    //   case smt.ArrayType(_,_) => true
-    //   case _ => false
-    // })
-
-    // val prevArrayVars = nextLambda.ids.take(nextLambda.ids.length / 2).filter(sym => sym.typ match {
-    //   case smt.ArrayType(_,_) => true
-    //   case _ => false
-    // })
 
     val opapp = nextLambda.e.asInstanceOf[smt.OperatorApplication]
     val operator_apps = opapp.operands.filter(exp => exp.isInstanceOf[smt.OperatorApplication])
@@ -640,7 +630,6 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     val nextVars1 = simulator.getVarsInOrder(nextSymTab1.map(_.swap), scope)
     val nextVars2 = simulator.getVarsInOrder(nextSymTab2.map(_.swap), scope)
 
-    val prevLambdaVars = nextLambda.ids.take(nextLambda.ids.length / 2)
     val nextLambdaVars = nextLambda.ids.takeRight(nextLambda.ids.length / 2)
 
     val matches1 = nextLambda.ids.zip(prevVars1.flatten ++ nextVars1.flatten)
@@ -751,7 +740,6 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
       log.debug("The primed_vars " + primedVars.toString)
       log.debug("The non-primed vars " + nonPrimedVars.toString)
 
-      val matches = primedVars.zip(nonPrimedVars).map(p => p._1 -> p._2).toMap
       val opapp = lambda.e.asInstanceOf[smt.OperatorApplication]
       val operator_apps = opapp.operands.filter(exp => exp.isInstanceOf[smt.OperatorApplication])
       val equalities = operator_apps.map(p => p.asInstanceOf[smt.OperatorApplication]).
@@ -815,7 +803,6 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
       case smt.ConstArray(v, arrTyp) => List()
       case smt.MakeTuple(args) => args.flatMap(e => getVars(e))
       case opapp : smt.OperatorApplication =>
-        val op = opapp.op
         val args = opapp.operands.flatMap(exp => getVars(exp))
         args
       //UclidMain.println("Crashing Here" + op.toString)

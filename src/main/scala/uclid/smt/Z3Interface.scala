@@ -45,7 +45,6 @@ import java.util.HashMap
 import scala.collection.immutable.ListMap
 
 import scala.collection.mutable.Map
-import scala.collection.JavaConverters._
 import com.microsoft.z3.enumerations.Z3_lbool
 import com.microsoft.z3.enumerations.Z3_decl_kind
 import com.typesafe.scalalogging.Logger
@@ -65,7 +64,7 @@ class Z3Model(interface: Z3Interface, val model : z3.Model) extends Model {
 
   def convertZ3ArrayString(initExpr : z3.Expr) : String = {
 
-    var array : Map[String, String] = Map.empty[String, String]
+    val array : Map[String, String] = Map.empty[String, String]
     var e    : z3.Expr = model.eval(initExpr, true)
     var bottom : String = ""
     var longest : Integer = 1

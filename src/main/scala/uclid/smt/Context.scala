@@ -389,9 +389,7 @@ object Context
       k -> cnt
     }).toMap
   }
-  def countOccurrences(e : Expr) : Map[Expr, Int] = {
-    Map.empty
-  }
+
   def foldOverExpr[T](init : T, f : ((T, Expr) => T), e : Expr) : T = {
     val subResult = e match {
       case Symbol(_, _) | IntLit(_) | BitVectorLit(_, _) | BooleanLit(_) | EnumLit(_, _) | SynthSymbol(_, _, _, _, _) =>

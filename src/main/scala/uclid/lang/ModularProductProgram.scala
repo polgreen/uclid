@@ -117,7 +117,7 @@ class ModularProductProgramPass extends RewritePass {
                 stmts.head match {
                     case BlockStmt(vars, blockstmts) =>
                         findRequiredActivationVariables(blockstmts, currentScope, context + vars)
-                    case IfElseStmt(condition, ifblock, elseblock) => 
+                    case IfElseStmt(_, ifblock, elseblock) => 
                         val activationVarsDecl1 = createActivationVariables(k,helperObj.mapOfActivationVariables,helperObj.maxScope+1)
                         val activationVarsDecl2 = createActivationVariables(k,helperObj.mapOfActivationVariables,helperObj.maxScope+2)
                         if(!ifblock.asInstanceOf[BlockStmt].stmts.isEmpty)
@@ -134,7 +134,7 @@ class ModularProductProgramPass extends RewritePass {
                         findRequiredActivationVariables(ifblock.asInstanceOf[BlockStmt].stmts, ifScope, context + ifblock.asInstanceOf[BlockStmt].vars)
                         findRequiredActivationVariables(elseblock.asInstanceOf[BlockStmt].stmts, elseScope, context + elseblock.asInstanceOf[BlockStmt].vars)
                     
-                    case WhileStmt(condition, body, invariants) => 
+                    case WhileStmt(_, body, _) => 
                         val activationVarsDecl = createActivationVariables(k,helperObj.mapOfActivationVariables,helperObj.maxScope+1)
                         if(!body.asInstanceOf[BlockStmt].stmts.isEmpty)
                             ASTNode.introducePos(true, true, activationVarsDecl, body.asInstanceOf[BlockStmt].stmts.head.position)
@@ -143,12 +143,12 @@ class ModularProductProgramPass extends RewritePass {
                         newVarDeclarations += activationVarsDecl
                         findRequiredActivationVariables(body.asInstanceOf[BlockStmt].stmts, nextScope, context + body.asInstanceOf[BlockStmt].vars)
                     
-                    case ProcedureCallStmt(id, callLhss, args, instId, _) => 
+                    case ProcedureCallStmt(_, callLhss, args, _, _) => 
                         val n = callLhss.size
                         val m = args.size
                 
                         def getType(exp: Expr): Type = exp match {
-                            case FuncApplication(e, args) => 
+                            case FuncApplication(e, _) => 
                                 val typeOfIdentifier = ctxx.get(e.asInstanceOf[Identifier])
                                 typeOfIdentifier match {
                                     case Some(value) => value.typ.asInstanceOf[MapType].outType
@@ -298,7 +298,7 @@ class ModularProductProgramPass extends RewritePass {
                 {
                     stmts.head match
                     {
-                        case IfElseStmt(condition, ifblock, elseblock) => 
+                        case IfElseStmt(_, ifblock, elseblock) => 
                             
                             maxblock += 1
                             addDeclarationsToMap(maxblock, ifblock.asInstanceOf[BlockStmt].vars)
@@ -308,7 +308,7 @@ class ModularProductProgramPass extends RewritePass {
                             addDeclarationsToMap(maxblock, elseblock.asInstanceOf[BlockStmt].vars)
                             collectInsideBlockVarsUtil(elseblock.asInstanceOf[BlockStmt].stmts)
                         
-                        case WhileStmt(condition, body, invariants) => 
+                        case WhileStmt(_, body, _) => 
 
                             maxblock += 1
                             addDeclarationsToMap(maxblock, body.asInstanceOf[BlockStmt].vars)
@@ -431,7 +431,7 @@ class ModularProductProgramPass extends RewritePass {
         def getRenamedExpr(expr: Expr, context: Scope, copy: Int): Expr = {
             expr match 
             {
-                case Identifier(name) => 
+                case Identifier(_) => 
                     val typeOfIdentifier = context.get(expr.asInstanceOf[Identifier])
                     typeOfIdentifier match {
                         case Some(value) => 
@@ -442,7 +442,7 @@ class ModularProductProgramPass extends RewritePass {
                         case None => 
                             expr
                     }
-                case ConstArray(exp, typ) =>
+                case ConstArray(_, _) =>
                     throw new Utils.UnimplementedException("Type ConstArray not supported.")
 
                 case Tuple(values) => Tuple(values.map(getRenamedExpr(_, context, copy)))
@@ -462,7 +462,7 @@ class ModularProductProgramPass extends RewritePass {
 
                 case FuncApplication(e, args) => FuncApplication(e, args.map(getRenamedExpr(_, context, copy)))
                 
-                case Lambda(ids, e) => 
+                case Lambda(_, _) => 
                     throw new Utils.UnimplementedException("Lambdas not supported.")
                     
                 case _ => 
@@ -605,7 +605,7 @@ class ModularProductProgramPass extends RewritePass {
                             val activationVariableArray = helperObj.mapOfActivationVariables(currentScope)
                             for(i <- 0 until k)
                             {   
-                                var newlhss = ListBuffer[Lhs]()
+                                val newlhss = ListBuffer[Lhs]()
                                 for( lhsVar <- lhss)
                                 {
                                     lhsVar match {
@@ -691,14 +691,14 @@ class ModularProductProgramPass extends RewritePass {
                             
                         
                         case BlockStmt(blockvars, blockstmts) =>
-                            var ctx = context + blockvars
-                            var newblockvars: List[BlockVarsDecl] = List()
+                            val ctx = context + blockvars
+                            val newblockvars: List[BlockVarsDecl] = List()
                             helperObj.mapOfRenamedVarDecls get blocknum match {
                                 case Some(listOfDecls) =>
                                     newblockvars = listOfDecls.toList
                                 case None =>
                             }
-                            var newblockstmts = ListBuffer[Statement]()
+                            val newblockstmts = ListBuffer[Statement]()
                             blocknum+=1
                             translateBody(currentScope, blockstmts, newblockstmts, ctx)
                             val newBlock = BlockStmt(newblockvars, newblockstmts.toList)
@@ -757,15 +757,15 @@ class ModularProductProgramPass extends RewritePass {
                                 orCondition = Operator.or(orCondition, andExpr)
                             }
         
-                            var whilebody = ListBuffer[Statement]()
+                            val whilebody = ListBuffer[Statement]()
                             for(i <- 0 until k)
                             {
                                 val currentActVarName = originalActivationVariableArray(i)
                                 val newActVarName = newActivationVarArray(i)
                                 val checkActVarCondition = currentActVarName.asInstanceOf[Expr]  
                                 val newCondition = getRenamedExpr(condition, context, i)
-                                var andExpr = Operator.and(checkActVarCondition, newCondition)
-                                var newActVarAssignment = AssignStmt(List(LhsId(newActVarName)), List(andExpr))
+                                val andExpr = Operator.and(checkActVarCondition, newCondition)
+                                val newActVarAssignment = AssignStmt(List(LhsId(newActVarName)), List(andExpr))
                                 ASTNode.introducePos(true, true, newActVarAssignment, condition.position)
                                 whilebody += newActVarAssignment
                             }
@@ -775,7 +775,7 @@ class ModularProductProgramPass extends RewritePass {
                                 actVarCond = Operator.and(actVarCond, originalActivationVariableArray(i))
         
         
-                            var newinvariants = ListBuffer[Expr]()
+                            val newinvariants = ListBuffer[Expr]()
                             invariants.foreach{
                                 inv => inv match {
                                             case OperatorApplication(op, operands) => 
@@ -846,115 +846,115 @@ class ModularProductProgramPass extends RewritePass {
                                 //--------Creating Outer If Condition's true Block--------//
             
                                 //Creating first if condition 
-                                var newIfStatements1 = ListBuffer[Statement]()
+                                val newIfStatements1 = ListBuffer[Statement]()
                                 var newArguments = ListBuffer[Identifier]()
                                 for(i <- 0 until k)
                                 {   
-                                    var currentActVarName = originalActivationVariableArray(i)
+                                    val currentActVarName = originalActivationVariableArray(i)
                                     newArguments += currentActVarName
-                                    var checkActVarCondition = currentActVarName.asInstanceOf[Expr] 
-                                    var trueStmtBlock1 = ListBuffer[Statement]()
+                                    val checkActVarCondition = currentActVarName.asInstanceOf[Expr] 
+                                    val trueStmtBlock1 = ListBuffer[Statement]()
                                     for(j <- 0 until m)
                                     {
                                         var newlhss: List[Lhs] = List()
                                         var newrhss: List[Expr] = List()
-                                        var newActivationVarArray = helperObj.mapOfNewVariables(helperObj.maxVarScope+j) //CHECK
-                                        var newActivationVar = newActivationVarArray(i) //as Set - Not activation Variables
-                                        var lhsId = LhsId(newActivationVar.asInstanceOf[Identifier])
-                                        var rhsId = getRenamedExpr(args(j), context, i)
+                                        val newActivationVarArray = helperObj.mapOfNewVariables(helperObj.maxVarScope+j) //CHECK
+                                        val newActivationVar = newActivationVarArray(i) //as Set - Not activation Variables
+                                        val lhsId = LhsId(newActivationVar.asInstanceOf[Identifier])
+                                        val rhsId = getRenamedExpr(args(j), context, i)
                                         newlhss = List(lhsId)
                                         newrhss = List(rhsId)
-                                        var assignStmt = AssignStmt(newlhss, newrhss)
+                                        val assignStmt = AssignStmt(newlhss, newrhss)
                                         trueStmtBlock1 += assignStmt.asInstanceOf[Statement]
                                     }
                                     //creatingIfStmt1
-                                    var emptyVarsList: List[BlockVarsDecl] = List()
-                                    var trueBlockStmt1 = BlockStmt(emptyVarsList,trueStmtBlock1.toList)
-                                    var falseBlockStmt = BlockStmt(emptyVarsList, List(SkipStmt()))
-                                    var statement1 = IfElseStmt(checkActVarCondition, trueBlockStmt1, falseBlockStmt)
+                                    val emptyVarsList: List[BlockVarsDecl] = List()
+                                    val trueBlockStmt1 = BlockStmt(emptyVarsList,trueStmtBlock1.toList)
+                                    val falseBlockStmt = BlockStmt(emptyVarsList, List(SkipStmt()))
+                                    val statement1 = IfElseStmt(checkActVarCondition, trueBlockStmt1, falseBlockStmt)
                                     newIfStatements1 += statement1
                                 }
-                                var moreArguments = ListBuffer[Identifier]()
+                                val moreArguments = ListBuffer[Identifier]()
                                 for(j <- 0 until m)
                                 {
                                     for(i<- 0 until k)
                                     {
-                                        var newActivationVarArray = helperObj.mapOfNewVariables(helperObj.maxVarScope+j) //WRONG
-                                        var newActivationVar = newActivationVarArray(i)
+                                        val newActivationVarArray = helperObj.mapOfNewVariables(helperObj.maxVarScope+j) //WRONG
+                                        val newActivationVar = newActivationVarArray(i)
                                         moreArguments += newActivationVar
                                     }
                                 }
                                 moreArguments ++= newArguments
                                 newArguments = moreArguments
-                                var newIfStatements2 = ListBuffer[Statement]()
-                                var newReturnParameters =  ListBuffer[Lhs]() //to be used for call stmt
+                                val newIfStatements2 = ListBuffer[Statement]()
+                                val newReturnParameters =  ListBuffer[Lhs]() //to be used for call stmt
                                 for(i <- 0 until k)
                                 {   
-                                    var currentActVarName = originalActivationVariableArray(i)
-                                    var checkActVarCondition = currentActVarName.asInstanceOf[Expr] 
-                                    var trueStmtBlock2 = ListBuffer[Statement]()
+                                    val currentActVarName = originalActivationVariableArray(i)
+                                    val checkActVarCondition = currentActVarName.asInstanceOf[Expr] 
+                                    val trueStmtBlock2 = ListBuffer[Statement]()
                                     for(j <- 0 until n)
                                     {
                                         var newlhss: List[Lhs] = List()
                                         var newrhss: List[Expr] = List()
-                                        var newActivationVarArray = helperObj.mapOfNewVariables(helperObj.maxVarScope+m+j)
-                                        var newActivationVar = newActivationVarArray(i)
-                                        var newReturnVar = getRenamedExpr(callLhss(j).ident, context, i)
-                                        var lhsId = LhsId(newReturnVar.asInstanceOf[Identifier])
-                                        var callStmtLhs = LhsId(newActivationVar.asInstanceOf[Identifier])
-                                        var rhsId = newActivationVar.asInstanceOf[Expr]
+                                        val newActivationVarArray = helperObj.mapOfNewVariables(helperObj.maxVarScope+m+j)
+                                        val newActivationVar = newActivationVarArray(i)
+                                        val newReturnVar = getRenamedExpr(callLhss(j).ident, context, i)
+                                        val lhsId = LhsId(newReturnVar.asInstanceOf[Identifier])
+                                        val callStmtLhs = LhsId(newActivationVar.asInstanceOf[Identifier])
+                                        val rhsId = newActivationVar.asInstanceOf[Expr]
                                         newlhss = List(lhsId)
                                         newrhss = List(rhsId)
                                         newReturnParameters += callStmtLhs
-                                        var assignStmt = AssignStmt(newlhss, newrhss)
+                                        val assignStmt = AssignStmt(newlhss, newrhss)
                                         trueStmtBlock2 += assignStmt.asInstanceOf[Statement]
                                     }
         
         
                                     //creatingIfStmt2
-                                    var emptyVarsList: List[BlockVarsDecl] = List()
-                                    var trueBlockStmt2 = BlockStmt(emptyVarsList,trueStmtBlock2.toList)
-                                    var falseBlockStmt = BlockStmt(emptyVarsList, List(SkipStmt()))
-                                    var statement2 = IfElseStmt(checkActVarCondition, trueBlockStmt2, falseBlockStmt)
+                                    val emptyVarsList: List[BlockVarsDecl] = List()
+                                    val trueBlockStmt2 = BlockStmt(emptyVarsList,trueStmtBlock2.toList)
+                                    val falseBlockStmt = BlockStmt(emptyVarsList, List(SkipStmt()))
+                                    val statement2 = IfElseStmt(checkActVarCondition, trueBlockStmt2, falseBlockStmt)
                                     newIfStatements2 += statement2
             
                                 }
                                 //creating new call statement
-                                var newProcId = Identifier(id.name + "$" + (k).toString)
-                                var procCallStmt = ProcedureCallStmt(newProcId, newReturnParameters.toList, newArguments.toList, instId)
-                                var modularStatements = newIfStatements1 
+                                val newProcId = Identifier(id.name + "$" + (k).toString)
+                                val procCallStmt = ProcedureCallStmt(newProcId, newReturnParameters.toList, newArguments.toList, instId)
+                                val modularStatements = newIfStatements1 
                                 modularStatements += procCallStmt
                                 modularStatements ++= newIfStatements2
-                                var emptyVarsList: List[BlockVarsDecl] = List()
-                                var trueBlockStmt = BlockStmt(emptyVarsList,modularStatements.toList)
-                                var falseBlockStmt = BlockStmt(emptyVarsList, List(SkipStmt()))
-                                var modularStmt = IfElseStmt(orCondition, trueBlockStmt, falseBlockStmt)
+                                val emptyVarsList: List[BlockVarsDecl] = List()
+                                val trueBlockStmt = BlockStmt(emptyVarsList,modularStatements.toList)
+                                val falseBlockStmt = BlockStmt(emptyVarsList, List(SkipStmt()))
+                                val modularStmt = IfElseStmt(orCondition, trueBlockStmt, falseBlockStmt)
                                 newbody += modularStmt
                                 helperObj.maxVarScope += (numberOfParameters + numberOfReturnParameters)
                             }
 
                             else 
                             {
-                                var originalActivationVariableArray = helperObj.mapOfActivationVariables(currentScope)
+                                val originalActivationVariableArray = helperObj.mapOfActivationVariables(currentScope)
                                 for ( i <- 0 until k )
                                 {
-                                    var emptyVarsList: List[BlockVarsDecl] = List()
-                                    var activationVariable = originalActivationVariableArray(i)
-                                    var actVarCheckCondition = activationVariable.asInstanceOf[Expr]
+                                    val emptyVarsList: List[BlockVarsDecl] = List()
+                                    val activationVariable = originalActivationVariableArray(i)
+                                    val actVarCheckCondition = activationVariable.asInstanceOf[Expr]
                                     val newlhss = callLhss.map(
                                         variable => LhsId(getRenamedExpr(variable.ident.asInstanceOf[Expr], context, i).asInstanceOf[Identifier]))
                                     val newargs = args.map(getRenamedExpr(_, context, i))
-                                    var procCallStmt = ProcedureCallStmt(id, newlhss, newargs.toList, instId)
-                                    var trueBlockStmt = BlockStmt(emptyVarsList,List(procCallStmt))
-                                    var falseBlockStmt = BlockStmt(emptyVarsList, List(SkipStmt()))
-                                    var newStmt = IfElseStmt(actVarCheckCondition, trueBlockStmt, falseBlockStmt)
+                                    val procCallStmt = ProcedureCallStmt(id, newlhss, newargs.toList, instId)
+                                    val trueBlockStmt = BlockStmt(emptyVarsList,List(procCallStmt))
+                                    val falseBlockStmt = BlockStmt(emptyVarsList, List(SkipStmt()))
+                                    val newStmt = IfElseStmt(actVarCheckCondition, trueBlockStmt, falseBlockStmt)
                                     newbody += newStmt
                                 }
                                 helperObj.maxVarScope += (numberOfParameters + numberOfReturnParameters)
                                 
                             }
                         
-                        case ModuleCallStmt(id) =>
+                        case ModuleCallStmt(_) =>
                             throw new Utils.UnimplementedException("Module Calls are unsupported")
 
                         case _ => newbody += stmts.head
@@ -969,7 +969,7 @@ class ModularProductProgramPass extends RewritePass {
             context += proc.body.asInstanceOf[BlockStmt].vars
             helperObj.maxScope = 0
             helperObj.maxVarScope = 1
-            var newbody = ListBuffer[Statement]()
+            val newbody = ListBuffer[Statement]()
             translateBody(0, proc.body.asInstanceOf[BlockStmt].stmts, newbody, context)
             newbody
         }
@@ -1051,11 +1051,11 @@ class ModularProductProgramPass extends RewritePass {
 
     def removeHyperSelectOp(oldProc: ProcedureDecl, traceValToRetain: Int) : ProcedureDecl  = {
 
-        var newRequiresList = new ListBuffer[Expr]()
-        var newEnsuresList = new ListBuffer[Expr]()
+        val newRequiresList = new ListBuffer[Expr]()
+        val newEnsuresList = new ListBuffer[Expr]()
 
         def isHyperSelectPresent(op: Operator, operands: List[Expr]): Boolean = op match {
-            case HyperSelect(i) => true
+            case HyperSelect(_) => true
             case _ => operands.map {
                 case OperatorApplication(op_, operands_) => isHyperSelectPresent(op_, operands_)
                 case _ => false
@@ -1096,7 +1096,7 @@ class ModularProductProgramPass extends RewritePass {
             {
                 oldstmts.head match
                 {
-                    case AssumeStmt(expr, id) =>
+                    case AssumeStmt(expr, _) =>
                         expr match {
                             case OperatorApplication(op, operands) =>
                                 val hasHyperSelect = isHyperSelectPresent(op, operands)
@@ -1112,7 +1112,7 @@ class ModularProductProgramPass extends RewritePass {
                                 newstmts += oldstmts.head
                         }
 
-                    case AssertStmt(expr, id) =>
+                    case AssertStmt(expr, _) =>
                         expr match {
                             case OperatorApplication(op, operands) =>
                                 val hasHyperSelect = isHyperSelectPresent(op, operands)
@@ -1128,17 +1128,17 @@ class ModularProductProgramPass extends RewritePass {
                         }
 
                     case IfElseStmt(cond, ifblock, elseblock) =>
-                        var newifblock = ListBuffer[Statement]()
-                        var newelseblock = ListBuffer[Statement]()
+                        val newifblock = ListBuffer[Statement]()
+                        val newelseblock = ListBuffer[Statement]()
                         removeHyperSelectsFromBody(ifblock.asInstanceOf[BlockStmt].stmts, newifblock)
                         removeHyperSelectsFromBody(elseblock.asInstanceOf[BlockStmt].stmts, newelseblock)
-                        var trueblock = BlockStmt(ifblock.asInstanceOf[BlockStmt].vars, newifblock.toList)
-                        var falseblock = BlockStmt(elseblock.asInstanceOf[BlockStmt].vars, newelseblock.toList)
-                        var newIfStatement = IfElseStmt(cond, trueblock, falseblock)
+                        val trueblock = BlockStmt(ifblock.asInstanceOf[BlockStmt].vars, newifblock.toList)
+                        val falseblock = BlockStmt(elseblock.asInstanceOf[BlockStmt].vars, newelseblock.toList)
+                        val newIfStatement = IfElseStmt(cond, trueblock, falseblock)
                         newstmts += newIfStatement
 
                     case WhileStmt(cond, body, invariants) =>
-                        var newinvariants = ListBuffer[Expr]()
+                        val newinvariants = ListBuffer[Expr]()
                         for(inv <- invariants) {
                             inv match {
                                 case OperatorApplication(op, operands) => 
@@ -1156,10 +1156,10 @@ class ModularProductProgramPass extends RewritePass {
                                 
                             }
                         }
-                        var newwhilebody = ListBuffer[Statement]()
+                        val newwhilebody = ListBuffer[Statement]()
                         removeHyperSelectsFromBody(body.asInstanceOf[BlockStmt].stmts, newwhilebody)
-                        var newwhilebodyblock = BlockStmt(body.asInstanceOf[BlockStmt].vars, newwhilebody.toList)
-                        var newwhilestmt = WhileStmt(cond, newwhilebodyblock, newinvariants.toList)
+                        val newwhilebodyblock = BlockStmt(body.asInstanceOf[BlockStmt].vars, newwhilebody.toList)
+                        val newwhilestmt = WhileStmt(cond, newwhilebodyblock, newinvariants.toList)
                         newstmts += newwhilestmt.asInstanceOf[Statement]
 
                     case _ =>   
@@ -1188,7 +1188,7 @@ class ModularProductProgramPass extends RewritePass {
     private def findTranslatableProcedures(moduleInDecls: List[Decl]): Unit = {
         if(!moduleInDecls.isEmpty) {
             moduleInDecls.head match {
-                case proc : ProcedureDecl =>
+                case _proc : ProcedureDecl =>
                     val proc = moduleInDecls.head.asInstanceOf[ProcedureDecl]
                     val traceValueList = checkForRelationalSpecification(proc)
                     val isProcRelevant = if (traceValueList.size > 0) true else false
@@ -1239,7 +1239,7 @@ class ModularProductProgramPass extends RewritePass {
                     }
                     else {
                         newModuleDecls += proc
-                        var procArray = new Array[ProcedureDecl](1)
+                        val procArray = new Array[ProcedureDecl](1)
                         procArray(0) = proc
                         procedureMap +=(proc -> procArray )
                     }
@@ -1254,7 +1254,7 @@ class ModularProductProgramPass extends RewritePass {
 
     def modifyControlBlock(oldCmds: List[GenericProofCommand], procedures: List[ProcedureDecl]): List[GenericProofCommand] = {
 
-        var newCommands = ListBuffer[GenericProofCommand]()
+        val newCommands = ListBuffer[GenericProofCommand]()
         var mapOfResultVars = Map[Identifier, (Boolean, ProcedureDecl)]()  //variables holding proof results
 
         def modifyControlBlockUtil(oldCmds: List[GenericProofCommand]): Unit = {
@@ -1285,10 +1285,10 @@ class ModularProductProgramPass extends RewritePass {
                                         
                                     case None => newResultVar = command.resultVar
                                 } 
-                                var newArgs = ListBuffer[(Expr, String)]()
+                                val newArgs = ListBuffer[(Expr, String)]()
                                 val tup = (modularProcedure.id.asInstanceOf[Expr], modularProcedure.id.name)
                                 newArgs += tup
-                                var newCommand = GenericProofCommand(command.name, command.params, newArgs.toList, newResultVar, command.argObj)
+                                val newCommand = GenericProofCommand(command.name, command.params, newArgs.toList, newResultVar, command.argObj)
                                 ASTNode.introducePos(true, true, newCommand, command.position)
                                 newCommands  += newCommand
 
@@ -1307,7 +1307,7 @@ class ModularProductProgramPass extends RewritePass {
                                     if(isRelevant) {
                                         val copyArray = procWithRelSpec(proc)._2
                                         for(k <- copyArray) {
-                                            var newArgs = ListBuffer[(Expr, String)]()
+                                            val newArgs = ListBuffer[(Expr, String)]()
                                             val newArgObj = Some(Identifier(varName + "$" + k.toString()))
                                             for(arg <- command.args) {
                                                 val ident = arg._1

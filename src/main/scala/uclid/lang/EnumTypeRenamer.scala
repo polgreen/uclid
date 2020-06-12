@@ -40,7 +40,6 @@ package uclid
 package lang
 
 import scala.collection.mutable.{Map => MutableMap}
-import scala.collection.immutable.Map
 
 object Logic {
   val LIA = "LIA"

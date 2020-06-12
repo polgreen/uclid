@@ -40,8 +40,6 @@
 package uclid
 package lang
 
-import scala.collection.mutable.{Set => MutableSet}
-import scala.collection.immutable.Map
 import com.typesafe.scalalogging.Logger
 
 class ConstantLitRewriterPass extends RewritePass {

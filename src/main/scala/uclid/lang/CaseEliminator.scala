@@ -40,8 +40,6 @@
 package uclid
 package lang
 
-import scala.collection.mutable.{Set => MutableSet}
-import scala.collection.immutable.Map
 
 class CaseEliminatorPass extends RewritePass {
   def casesToIfs(cases : List[(Expr, Statement)]) : Statement = {

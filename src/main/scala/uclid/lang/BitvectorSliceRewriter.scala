@@ -88,7 +88,7 @@ class BitVectorSliceConstifyPass extends RewritePass {
   def rewriteSlice(slice : VarBitVectorSlice, ctx : Scope) : Some[BitVectorSlice] = {
     slice.width match {
       case None => Some(slice)
-      case Some(w) =>
+      case Some(_) =>
         val hiExp = Converter.exprToSMT(slice.hi, ctx)
         val loExp = Converter.exprToSMT(slice.lo, ctx)
         val hiInt = ExpressionAnalyzer.getConstIntValue(hiExp)

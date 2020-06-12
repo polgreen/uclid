@@ -123,7 +123,7 @@ class ControlCommandCheckerPass extends ReadOnlyPass[Unit] {
     }
     Utils.checkParsingError(badProperties.size == 0, errorMsg, cmd.pos, filename)
   }
-  def checkParamIsALogic(cmd : GenericProofCommand, context : Scope, filename : Option[String]) {
+  def checkParamIsALogic(cmd : GenericProofCommand, filename : Option[String]) {
     Utils.checkParsingError(cmd.params.size == 1, "'%s' command expects one parameter specifying the logic".format(cmd.name.toString), cmd.pos, filename)
     def logicIsSupported(logic : String) : Boolean = {
       logic match {
@@ -173,7 +173,7 @@ class ControlCommandCheckerPass extends ReadOnlyPass[Unit] {
         Utils.checkParsingError(module.procedures.find(p => p.id == arg).isDefined, errorMsg, arg.pos, filename)
       case "synthesize_invariant" =>
         checkNoArgs(cmd, filename)
-        checkParamIsALogic(cmd, context, filename)
+        checkParamIsALogic(cmd, filename)
         checkNoArgObj(cmd, filename)
         checkNoResultVar(cmd, filename)
       case "check" | "print_module" =>

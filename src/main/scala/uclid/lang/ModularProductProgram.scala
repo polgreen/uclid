@@ -692,7 +692,7 @@ class ModularProductProgramPass extends RewritePass {
                         
                         case BlockStmt(blockvars, blockstmts) =>
                             val ctx = context + blockvars
-                            val newblockvars: List[BlockVarsDecl] = List()
+                            var newblockvars: List[BlockVarsDecl] = List()
                             helperObj.mapOfRenamedVarDecls get blocknum match {
                                 case Some(listOfDecls) =>
                                     newblockvars = listOfDecls.toList

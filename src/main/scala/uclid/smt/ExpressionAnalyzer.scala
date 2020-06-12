@@ -44,7 +44,7 @@ import scala.collection.immutable.Map
 
 object ExpressionAnalyzer {
   var z3ConstInterface = new Z3Interface()
-  def getConstIntValue(expr : smt.Expr, scope : lang.Scope) : Option[Int] = {
+  def getConstIntValue(expr : smt.Expr) : Option[Int] = {
     Utils.assert(expr.typ.isInt, "Expected an integer-sorted expression.")
     val smtExpr1 = Converter.renameSymbols(expr, (s, t) => s + "_1")
     val smtExpr2 = Converter.renameSymbols(expr, (s, t) => s + "_2")

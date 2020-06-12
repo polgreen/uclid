@@ -252,7 +252,6 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     val nextVars1 = simulator.getVarsInOrder(nextSymTab1.map(_.swap), scope)
     val nextVars2 = simulator.getVarsInOrder(nextSymTab2.map(_.swap), scope)
 
-    val prevLambdaVars = nextLambda.ids.take(nextLambda.ids.length / 2)
     val nextLambdaVars = nextLambda.ids.takeRight(nextLambda.ids.length / 2)
 
     val matches1 = nextLambda.ids.zip(prevVars1.flatten ++ nextVars1.flatten)
@@ -328,7 +327,6 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     val initSyms = initLambda.ids
     val taintSyms = taintInitLambda.ids
     val conjunct = smt.OperatorApplication(smt.ConjunctionOp, List(initLambda.e, taintInitLambda.e))
-    val numTaintVars = taintSyms.length
     smt.Lambda(initSyms ++ taintSyms, conjunct)
   }
 
@@ -357,15 +355,15 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
 
   def getTaintExprs(nextLambda: smt.Lambda, prevTaintVars: Map[smt.Expr, List[smt.Symbol]], nextTaintVars: Map[smt.Expr, List[smt.Symbol]]) = {
 
-    val nextArrayVars = nextLambda.ids.takeRight(nextLambda.ids.length / 2).filter(sym => sym.typ match {
-      case smt.ArrayType(_,_) => true
-      case _ => false
-    })
+    // val nextArrayVars = nextLambda.ids.takeRight(nextLambda.ids.length / 2).filter(sym => sym.typ match {
+    //   case smt.ArrayType(_,_) => true
+    //   case _ => false
+    // })
 
-    val prevArrayVars = nextLambda.ids.take(nextLambda.ids.length / 2).filter(sym => sym.typ match {
-      case smt.ArrayType(_,_) => true
-      case _ => false
-    })
+    // val prevArrayVars = nextLambda.ids.take(nextLambda.ids.length / 2).filter(sym => sym.typ match {
+    //   case smt.ArrayType(_,_) => true
+    //   case _ => false
+    // })
 
     val opapp = nextLambda.e.asInstanceOf[smt.OperatorApplication]
     val operator_apps = opapp.operands.filter(exp => exp.isInstanceOf[smt.OperatorApplication])
@@ -557,7 +555,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
           Set(smt.OperatorApplication(smt.ITEOp, List(smt.OperatorApplication(smt.ConjunctionOp, List(t1_cond, opapp.operands(0))), t1_if, t1_else)))
         }
         else {
-          val op = opapp.op
+          // val op = opapp.op
           val args = opapp.operands.flatMap(exp => getT1Taint(exp, prevVarTaints)).toSet
           args
         }

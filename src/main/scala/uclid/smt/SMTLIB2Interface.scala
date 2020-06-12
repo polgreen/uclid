@@ -375,7 +375,7 @@ class SMTLIB2Interface(args: List[String]) extends Context with SMTLIB2Base {
   }
 
   override def preassert(e: Expr) {
-    var declCommands = new ListBuffer[String]()
+    val declCommands = new ListBuffer[String]()
     Context.findTypes(e).filter(typ => !typeMap.contains(typ)).foreach {
       newType => {
         val (typeName, newTypes) = generateDatatype(newType)
@@ -387,14 +387,14 @@ class SMTLIB2Interface(args: List[String]) extends Context with SMTLIB2Base {
     if (algebraic.length > 0) {
       val pattern = """\[[^\]]+\]""".r
   
-      var names = algebraic.foldLeft("") { 
+      val names = algebraic.foldLeft("") { 
         case (acc, d) => { 
           val tmp = (pattern findAllIn d toList)
           acc + "(%s)".format(tmp.head.slice(1, tmp.head.length - 1))
         }
       }
   
-      var fields = algebraic.foldLeft("") { 
+      val fields = algebraic.foldLeft("") { 
         case (acc, d) => {
           val tmp = (pattern findAllIn d toList).tail.map{d => "(%s)".format(d.slice(1, d.length - 1))}.mkString(" ")
           acc + "(%s)".format(tmp)

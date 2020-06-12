@@ -225,12 +225,12 @@ class ModularProductProgramPass extends RewritePass {
                 {
                     stmts.head match
                     {
-                        case IfElseStmt(condition, ifblock, elseblock) => 
+                        case IfElseStmt(_, ifblock, elseblock) => 
                             collectRenamedVariablesFromBlockVars(ifblock.asInstanceOf[BlockStmt].vars)
                             collectRenamedVariablesFromBlockBody(ifblock.asInstanceOf[BlockStmt].stmts)
                             collectRenamedVariablesFromBlockVars(elseblock.asInstanceOf[BlockStmt].vars)
                             collectRenamedVariablesFromBlockBody(elseblock.asInstanceOf[BlockStmt].stmts)
-                        case WhileStmt(condition, body, invariants) => 
+                        case WhileStmt(_, body, _) => 
                             collectRenamedVariablesFromBlockVars(body.asInstanceOf[BlockStmt].vars)
                             collectRenamedVariablesFromBlockBody(body.asInstanceOf[BlockStmt].stmts)
                         case BlockStmt(vars, blockstmts) =>
@@ -1188,7 +1188,7 @@ class ModularProductProgramPass extends RewritePass {
     private def findTranslatableProcedures(moduleInDecls: List[Decl]): Unit = {
         if(!moduleInDecls.isEmpty) {
             moduleInDecls.head match {
-                case _proc : ProcedureDecl =>
+                case _ : ProcedureDecl =>
                     val proc = moduleInDecls.head.asInstanceOf[ProcedureDecl]
                     val traceValueList = checkForRelationalSpecification(proc)
                     val isProcRelevant = if (traceValueList.size > 0) true else false
@@ -1223,7 +1223,7 @@ class ModularProductProgramPass extends RewritePass {
                         val oldProcedure = removeHyperSelectOp(proc, 0)
                         newModuleDecls += oldProcedure
                         val traceValuesArray = procWithRelSpec(proc)._2
-                        var procArray = new Array[ProcedureDecl](traceValuesArray.size + 1)
+                        val procArray = new Array[ProcedureDecl](traceValuesArray.size + 1)
                         procArray(0) = oldProcedure
                         var index = 1
                         traceValuesArray.foreach { 

@@ -452,7 +452,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     // Assuming the hyperAsserts to be equalities
     val equalities = hyperAsserts.filter(
       assert => assert.expr match {
-        case smt.OperatorApplication(op, operands) => op == smt.EqualityOp
+        case smt.OperatorApplication(op, _) => op == smt.EqualityOp
         case _ => false
       })
 
@@ -482,8 +482,8 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
   def getT2Taint(e: smt.Expr, prevVarTaints: Map[smt.Expr, List[smt.Expr]]): Set[smt.Expr] = {
     e match {
 
-      case smt.Symbol(id, symbolTyp) => symbolTyp match {
-        case smt.ArrayType(inTypes, outType) => prevVarTaints.get(e) match {
+      case smt.Symbol(_, symbolTyp) => symbolTyp match {
+        case smt.ArrayType(inTypes, _) => prevVarTaints.get(e) match {
           case Some(value) => Set(value(1))
           case None => Set(smt.ConstArray(smt.BooleanLit(false), smt.ArrayType(inTypes, smt.BoolType)))
         }
@@ -502,16 +502,16 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
         val args = opapp.operands.flatMap(exp => getT2Taint(exp, prevVarTaints)).toSet
         args*/
       //UclidMain.println("Crashing Here" + op.toString)
-      case smt.ArraySelectOperation(a,index) =>
+      case smt.ArraySelectOperation(_,_) =>
         throw new Utils.UnimplementedException("T2 taint not defined for array select.")
       case smt.ArrayStoreOperation(a,index,value) =>
           val t2_a = getT2Taint(a, prevVarTaints)
           val t1_val = setToConjunct(getT1Taint(value, prevVarTaints))
           Predef.assert(t2_a.toList.length == 1)
           Set(smt.ArrayStoreOperation(t2_a.toList(0), index, t1_val))
-      case smt.FunctionApplication(f, args) =>
+      case smt.FunctionApplication(_, _) =>
         throw new Utils.UnimplementedException("T2 taint not defined for func app.")
-      case smt.ConstArray(e, typ) =>
+      case smt.ConstArray(_, typ) =>
         //throw new Utils.UnimplementedException("T2 taint for '" + e + "' is not yet supported.")
         Set(smt.ConstArray(smt.BooleanLit(true), smt.ArrayType(typ.inTypes, smt.BoolType)))
       case _ =>
@@ -522,7 +522,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
   def getT1Taint(e: smt.Expr, prevVarTaints: Map[smt.Expr, List[smt.Expr]]): Set[smt.Expr] = {
     e match {
       //T1 taint of arrays and non arrays
-      case smt.Symbol(id, symbolTyp) => {
+      case smt.Symbol(_, _) => {
         prevVarTaints.get(e) match {
           case Some(v) => Set(v(0))
           case None =>
@@ -530,11 +530,11 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
             Set(smt.BooleanLit(false))
         }
       }
-      case smt.IntLit(n) => Set()
+      case smt.IntLit(_) => Set()
       case smt.BooleanLit(b) => Set()
-      case smt.BitVectorLit(bv, w) => Set()
-      case smt.EnumLit(id, eTyp) => Set()
-      case smt.ConstArray(v, arrTyp) => Set()
+      case smt.BitVectorLit(_, _) => Set()
+      case smt.EnumLit(_, _) => Set()
+      case smt.ConstArray(_, _) => Set()
       case smt.MakeTuple(args) => args.flatMap(e => getT1Taint(e, prevVarTaints)).toSet
       case opapp : smt.OperatorApplication =>
         if (opapp.op == smt.ITEOp) {
@@ -555,9 +555,9 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
         val t2_a = setToConjunct(getT2Taint(a, prevVarTaints))
         getT1Taint(a, prevVarTaints) ++ Set(smt.ArraySelectOperation(t2_a, index)) ++ idx_taints
 
-      case smt.ArrayStoreOperation(a,index,value) =>
+      case smt.ArrayStoreOperation(a,index,_) =>
         index.flatMap(idx => getT1Taint(idx, prevVarTaints)).toSet ++ getT1Taint(a, prevVarTaints)
-      case smt.FunctionApplication(f, args) =>
+      case smt.FunctionApplication(_, args) =>
         args.flatMap(arg => getT1Taint(arg, prevVarTaints)).toSet
       case _ =>
         throw new Utils.UnimplementedException("T1 taint for '" + e + "' is not yet supported.")
@@ -795,12 +795,12 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
 
   def getVars(e: smt.Expr): List[smt.Symbol] = {
     e match {
-      case smt.Symbol(id, symbolTyp) => List(e.asInstanceOf[smt.Symbol])
-      case smt.IntLit(n) => List()
-      case smt.BooleanLit(b) => List()
-      case smt.BitVectorLit(bv, w) => List()
-      case smt.EnumLit(id, eTyp) => List()
-      case smt.ConstArray(v, arrTyp) => List()
+      case smt.Symbol(_, _) => List(e.asInstanceOf[smt.Symbol])
+      case smt.IntLit(_) => List()
+      case smt.BooleanLit(_) => List()
+      case smt.BitVectorLit(_, _) => List()
+      case smt.EnumLit(_, _) => List()
+      case smt.ConstArray(_,_) => List()
       case smt.MakeTuple(args) => args.flatMap(e => getVars(e))
       case opapp : smt.OperatorApplication =>
         val args = opapp.operands.flatMap(exp => getVars(exp))
@@ -809,7 +809,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
       case smt.ArraySelectOperation(a,index) =>  getVars(a) ++ index.flatMap(e => getVars(e))
       case smt.ArrayStoreOperation(a,index,value) =>
         getVars(a) ++ index.flatMap(e => getVars(e)) ++ getVars(value)
-      case smt.FunctionApplication(f, args) =>
+      case smt.FunctionApplication(_, args) =>
         args.flatMap(arg => getVars(arg))
       case _ =>
         throw new Utils.UnimplementedException("'" + e + "' is not yet supported.")
@@ -855,7 +855,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     val ids = map.map(p => p._2).toList
     val reverse_map = map.map(_.swap)
     val const_vars = ids.filter(id => scope.get(id).get match {
-      case Scope.ConstantVar(id, typ) => true
+      case Scope.ConstantVar(_, _) => true
       case _ => false
     }).flatMap(id => reverse_map(id)).sortBy{
       v =>
@@ -878,7 +878,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
         name
     }
     val output_vars = ids.filter(id => scope.get(id).get match {
-      case Scope.OutputVar(id, typ) => true
+      case Scope.OutputVar(_, _) => true
       case _ => false
     }).flatMap(id => reverse_map(id)).sortBy{
       v =>
@@ -887,7 +887,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
         name
     }
     val state_vars = ids.filter(id => scope.get(id).get match {
-      case Scope.StateVar(id, typ) => true
+      case Scope.StateVar(_, _) => true
       case _ => false
     }).flatMap(id => reverse_map(id)).sortBy{
       v =>
@@ -896,7 +896,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
         name
     }
     val shared_vars = ids.filter(id => scope.get(id).get match {
-      case Scope.SharedVar(id, typ) => true
+      case Scope.SharedVar(_, _) => true
       case _ => false
     }).flatMap(id => reverse_map(id)).sortBy{
       v =>
@@ -921,7 +921,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     val equalities = operands.filter {
       operand =>
         operand match {
-          case smt.OperatorApplication(op, opers) =>
+          case smt.OperatorApplication(op, _) =>
             op == smt.EqualityOp
           case _ => false
         }
@@ -930,7 +930,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     val stateUpdates = equalities.filter {
       operand =>
         operand match {
-          case smt.OperatorApplication(op, opers) =>
+          case smt.OperatorApplication(_, opers) =>
             opers(0).isInstanceOf[smt.Symbol]
           case _ => false
         }
@@ -980,10 +980,10 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     val numberOfSteps       = bound
     val simRecord           = new simulator.SimulationTable
     val taintFrameTable     = new TaintFrameTable
-    var prevVarTable        = new ArrayBuffer[List[List[smt.Expr]]]()
-    var havocTable          = new ArrayBuffer[List[(smt.Symbol, smt.Symbol)]]()
-    var prevTaintVarTable   = new ArrayBuffer[List[smt.Expr]]()
-    var taintAssumes        = new ArrayBuffer[smt.Expr]()
+    val prevVarTable        = new ArrayBuffer[List[List[smt.Expr]]]()
+    val havocTable          = new ArrayBuffer[List[(smt.Symbol, smt.Symbol)]]()
+    val prevTaintVarTable   = new ArrayBuffer[List[smt.Expr]]()
+    val taintAssumes        = new ArrayBuffer[smt.Expr]()
 
     var stepOffset = 0
     //FIXME: Remove newInputSymbols
@@ -1001,7 +1001,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
       val initSymTab = simulator.newInputSymbols(simulator.getInitSymbolTable(scope), stepOffset, scope)
       stepOffset += 1
       frames += initSymTab
-      var prevVars = simulator.getVarsInOrder(initSymTab.map(_.swap), scope)
+      val prevVars = simulator.getVarsInOrder(initSymTab.map(_.swap), scope)
       prevVarTable += prevVars
       val init_havocs = simulator.getHavocs(init_lambda._1.e)
       val havoc_subs = init_havocs.map {
@@ -1025,7 +1025,7 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
 
         val nonArrayTaintVars = prevTaintVarTable(0).filter {
           sym => sym.typ match {
-            case smt.ArrayType(in, out) => false
+            case smt.ArrayType(_, _) => false
             case _ => true
           }
         }
@@ -1257,10 +1257,10 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     val numberOfSteps = bound
     val simRecord = new simulator.SimulationTable
     val taintFrameTable = new TaintFrameTable
-    var prevVarTable = new ArrayBuffer[List[List[smt.Expr]]]()
-    var havocTable = new ArrayBuffer[List[(smt.Symbol, smt.Symbol)]]()
-    var prevTaintVarTable = new ArrayBuffer[List[smt.Expr]]()
-    var taintAssumes = new ArrayBuffer[smt.Expr]()
+    val prevVarTable = new ArrayBuffer[List[List[smt.Expr]]]()
+    val havocTable = new ArrayBuffer[List[(smt.Symbol, smt.Symbol)]]()
+    val prevTaintVarTable = new ArrayBuffer[List[smt.Expr]]()
+    val taintAssumes = new ArrayBuffer[smt.Expr]()
 
     var stepOffset = 0
     //FIXME: Remove newInputSymbols
@@ -1274,11 +1274,11 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
 
     for (i <- 1 to num_copies) {
 
-        var frames = new simulator.FrameTable
+        val frames = new simulator.FrameTable
         val initSymTab = simulator.newInputSymbols(simulator.getInitSymbolTable(scope), stepOffset, scope)
         stepOffset += 1
         frames += initSymTab
-        var prevVars = simulator.getVarsInOrder(initSymTab.map(_.swap), scope)
+        val prevVars = simulator.getVarsInOrder(initSymTab.map(_.swap), scope)
         prevVarTable += prevVars
         val init_havocs = simulator.getHavocs(init_lambda._1.e)
         val havoc_subs = init_havocs.map {

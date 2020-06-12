@@ -95,7 +95,7 @@ class PrimedVariableEliminatorPass extends RewritePass {
   lazy val manager : PassManager = analysis.manager
   lazy val primedVariableCollector = manager.pass("PrimedVariableCollector").asInstanceOf[PrimedVariableCollector]
 
-  def getInitialAssigns(context : Scope) : List[AssignStmt] = {
+  def getInitialAssigns() : List[AssignStmt] = {
     val primeVarMap = primedVariableCollector.primeVarMap.get
     primeVarMap.map(p => {
       (AssignStmt(List(LhsId(p._2)), List(p._1)))
@@ -130,12 +130,12 @@ class PrimedVariableEliminatorPass extends RewritePass {
   }
   override def rewriteInit(init : InitDecl, context : Scope) : Option[InitDecl] = {
     val primeDecls = getPrimeVarDecls(context)
-    val initP = InitDecl(BlockStmt(primeDecls, getInitialAssigns(context) ++ List(init.body)))
+    val initP = InitDecl(BlockStmt(primeDecls, getInitialAssigns() ++ List(init.body)))
     Some(initP)
   }
   override def rewriteNext(next : NextDecl, context : Scope) : Option[NextDecl] = {
     val primeDecls = getPrimeVarDecls(context)
-    val nextP = NextDecl(BlockStmt(primeDecls, getInitialAssigns(context) ++ List(next.body) ++ getFinalAssigns(context)))
+    val nextP = NextDecl(BlockStmt(primeDecls, getInitialAssigns() ++ List(next.body) ++ getFinalAssigns(context)))
     Some(nextP)
   }
   override def rewriteHavoc(havocStmt : HavocStmt, context : Scope) : Option[Statement] = {
@@ -168,9 +168,7 @@ class PrimedVariableEliminatorPass extends RewritePass {
     }
   }
   override def rewriteInstance(instD : InstanceDecl, context : Scope) : Option[InstanceDecl] = {
-    lazy val primeVarMap = primedVariableCollector.primeVarMap.get
     val modType = instD.modType.get
-    val writeableArgs = (modType.outputs ++ modType.sharedVars).map(p => p._1).toSet
     val argsP = instD.arguments
     val instP = InstanceDecl(instD.instanceId, instD.moduleId, argsP, instD.instType, instD.modType)
     Some(instP)

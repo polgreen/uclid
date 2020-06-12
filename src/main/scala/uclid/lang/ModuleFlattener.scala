@@ -423,7 +423,7 @@ class ModuleInstantiatorPass(module : Module, inst : InstanceDecl, targetModule 
                                  case None => false // Instance already flattened
                                  case _ => true
                                 }
-      case ModifiableInstanceId(opapp)  => true
+      case ModifiableInstanceId(_)  => true
     }).flatMap(m => m match {
       case ModifiableId(id) => Some((m, NameProvider.get("modifies_" + id.toString())))
       case ModifiableInstanceId(_) => {

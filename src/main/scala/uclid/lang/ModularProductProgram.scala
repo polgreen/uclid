@@ -1262,8 +1262,6 @@ class ModularProductProgramPass extends RewritePass {
                 val command = oldCmds.head
                 if(command.isVerify) {
                     val args = command.args
-                    var newArgs = ListBuffer[(Expr, String)]()
-                    var newCommandList: List[GenericProofCommand] = List()
                     val exp = args(0)._1
 
                     for ( p <- procedures if p.id == exp.asInstanceOf[Identifier]) {
@@ -1271,7 +1269,6 @@ class ModularProductProgramPass extends RewritePass {
                         if(isProcRelevant) {
                             val copyArray = procWithRelSpec(p)._2
                             val procArray = procedureMap(p)
-                            val noOfProcCopies = copyArray.size
                             var index = 0
                             for(k <- copyArray)
                             {

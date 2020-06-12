@@ -339,9 +339,6 @@ class LazySCSolver(simulator: SymbolicSimulator) extends Z3Interface {
     smt.Lambda(nextInits ++ taintInits ++ nextPrimes ++ taintPrimes, conjunct)
   }
 
-  def getSupportsArray(lambda: smt.Lambda): Map[smt.Expr, Set[smt.Expr]] = {
-    Map.empty
-  }
 
   def getNewTaintSymbol(sym: smt.Symbol) = {
     sym.typ match {

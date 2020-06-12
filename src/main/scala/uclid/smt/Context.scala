@@ -327,9 +327,9 @@ object Context
         val results = e match {
           case Symbol(_, _) | IntLit(_) | BitVectorLit(_,_) | BooleanLit(_) | EnumLit(_, _) | SynthSymbol(_, _, _, _, _) =>
             eResult
-          case ConstArray(expr, typ) =>
+          case ConstArray(expr, _) =>
             eResult ++ accumulateOverExpr(expr, apply, memo)
-          case OperatorApplication(op,operands) =>
+          case OperatorApplication(_,operands) =>
             eResult ++ accumulateOverExprs(operands, apply, memo)
           case ArraySelectOperation(e, index) =>
             eResult ++ accumulateOverExpr(e, apply, memo) ++ accumulateOverExprs(index, apply, memo)
@@ -393,7 +393,7 @@ object Context
     val subResult = e match {
       case Symbol(_, _) | IntLit(_) | BitVectorLit(_, _) | BooleanLit(_) | EnumLit(_, _) | SynthSymbol(_, _, _, _, _) =>
         init
-      case OperatorApplication(op, operands) =>
+      case OperatorApplication(_, operands) =>
         foldOverExprs(init, f, operands)
       case ArraySelectOperation(e, index) =>
         foldOverExprs(foldOverExpr(init, f, e), f, index)

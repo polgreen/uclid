@@ -141,10 +141,7 @@ class ModularProductProgramPass extends RewritePass {
                         newVarDeclarations += activationVarsDecl
                         findRequiredActivationVariables(body.asInstanceOf[BlockStmt].stmts, nextScope, context + body.asInstanceOf[BlockStmt].vars)
                     
-                    case ProcedureCallStmt(_, callLhss, args, _, _) => 
-                        val n = callLhss.size
-                        val m = args.size
-                
+                    case ProcedureCallStmt(_, callLhss, args, _, _) =>                 
                         def getType(exp: Expr): Type = exp match {
                             case FuncApplication(e, _) => 
                                 val typeOfIdentifier = ctxx.get(e.asInstanceOf[Identifier])
@@ -600,7 +597,6 @@ class ModularProductProgramPass extends RewritePass {
                             }
                             
                         case AssignStmt(lhss, rhss) => 
-                            val activationVariableArray = helperObj.mapOfActivationVariables(currentScope)
                             for(i <- 0 until k)
                             {   
                                 val newlhss = ListBuffer[Lhs]()

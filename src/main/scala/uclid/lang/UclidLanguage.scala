@@ -264,7 +264,7 @@ sealed abstract class BVArgOperator(val w : Int) extends Operator {
   val arity = 2
 }
 case class BVLTOp(override val w : Int) extends BVArgOperator(w) {
-  override def toString = "<"
+  override def toString = "<" 
   override val hashId = 1200
   override val md5hashCode = computeMD5Hash(w)
 }

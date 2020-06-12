@@ -65,7 +65,7 @@ object Converter {
         smt.RecordType(fields.map((f) => (f._1.toString, typeToSMT(f._2))))
       case lang.EnumType(ids) =>
         smt.EnumType(ids.map(_.name))
-      case lang.SynonymType(typ) =>
+      case lang.SynonymType(_) =>
         throw new Utils.UnimplementedException("Synonym types must have been eliminated by now.")
       case lang.UndefinedType() | lang.ProcedureType(_, _) | lang.ExternalType(_, _) |
            lang.ModuleInstanceType(_) | lang.ModuleType(_, _, _, _, _, _, _, _) =>

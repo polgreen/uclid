@@ -63,7 +63,7 @@ class ModularProductProgramPass extends RewritePass {
         val newVarDeclarations = ListBuffer[BlockVarsDecl]()    //contains activationDecarations in proc body
         val newRequiresList = ListBuffer[Expr]()                //contains modified preconditions     
         val newEnsuresList = ListBuffer[Expr]()                 //contains modified postconditions
-        var newModifiesList = Set[ModifiableEntity]()                 //unused now. Can be used later if module variables are supported
+        val newModifiesList = Set[ModifiableEntity]()                 //unused now. Can be used later if module variables are supported
         
 
         def createActivationVariables(k: Int, actVariableMap: mutable.Map[Int, Array[Identifier]], level: Int): BlockVarsDecl = {
@@ -72,7 +72,7 @@ class ModularProductProgramPass extends RewritePass {
             /* Activation Variables are named in this manner 
                 actVari_j --> where i corresponds to level/scope and j corresponds to the jth copy of execution
             */
-            var listOfIdentifiers = new ListBuffer[Identifier]()
+            val listOfIdentifiers = new ListBuffer[Identifier]()
             val datatype: Type = BooleanType()
             for ( i <- 0 until k)
             {
@@ -86,7 +86,7 @@ class ModularProductProgramPass extends RewritePass {
         }
 
         def createReturnVariables(k: Int, actVariableMap: mutable.Map[Int, Array[Identifier]], level: Int, typ: Type): BlockVarsDecl = {
-            var keyArray = new Array[Identifier](k) //0 to k-1
+            val keyArray = new Array[Identifier](k) //0 to k-1
 
             /* New Variables are named in this manner 
                 newVari_j --> where i corresponds to level/scope and j corresponds to the jth copy of execution

@@ -414,7 +414,7 @@ class LTLPropertyRewriterPass extends RewritePass {
     }
   }
 
-  def newVars(vars : List[(Identifier, Type)], context : Scope) : List[(Identifier, Identifier, Type)] = {
+  def newVars(vars : List[(Identifier, Type)]) : List[(Identifier, Identifier, Type)] = {
     vars.map((p) => (p._1, NameProvider.get(p._1.toString() + "_copy2"), p._2))
   }
 
@@ -478,7 +478,7 @@ class LTLPropertyRewriterPass extends RewritePass {
     // create a copy of the state variables and non-deterministically assign the current state to it.
     val allPendingVars = monitors.flatMap(s => s.pendingVars.map(s => (s, BooleanType())))
     val varsToCopy = module.vars ++ allPendingVars
-    val varCopyPairs = newVars(varsToCopy, ctx)
+    val varCopyPairs = newVars(varsToCopy)
     val varsToCopyP = varCopyPairs.map(p => (p._2, p._3))
     val varsToCopyPDecl = varsToCopyP.map(v => StateVarsDecl(List(v._1), v._2))
     val copyStateInput = NameProvider.get(module.id.toString() + "_copy_state_in")

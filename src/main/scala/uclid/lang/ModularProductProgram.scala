@@ -351,8 +351,8 @@ class ModularProductProgramPass extends RewritePass {
             def modifyOutputParams(outParams: List[(Identifier,Type)], 
                 outputParameters : ListBuffer[(Identifier,Type)]) = modifyInputParams(outParams, outputParameters)
 
-            var inputParameters = ListBuffer[(Identifier,Type)]()
-            var outputParameters = ListBuffer[(Identifier,Type)]()
+            val inputParameters = ListBuffer[(Identifier,Type)]()
+            val outputParameters = ListBuffer[(Identifier,Type)]()
             modifyInputParams(proc.sig.inParams, inputParameters)
             modifyOutputParams(proc.sig.outParams, outputParameters)           
 
@@ -378,15 +378,15 @@ class ModularProductProgramPass extends RewritePass {
             @tailrec
             def modifyRequires(requiresList: List[Expr], newRequiresList: ListBuffer[Expr]): Unit = {
                 if(!requiresList.isEmpty) {
-                    var exp = requiresList.head
+                    val exp = requiresList.head
                     exp match {
                         case OperatorApplication(op, operands) => 
                             val containsHyperProperty = checkHyperSelectOp(op,operands,1)
                             var context = Scope.empty
                             context += proc
                             if(containsHyperProperty > 1) {
-                                    var renamedHyperExpression = getRenamedExpr(exp, context, k)
-                                    var newRequiresExpr = Operator.imply(actVarCond, renamedHyperExpression)
+                                    val renamedHyperExpression = getRenamedExpr(exp, context, k)
+                                    val newRequiresExpr = Operator.imply(actVarCond, renamedHyperExpression)
                                     ASTNode.introducePos[Expr](true, true, newRequiresExpr, requiresList.head.position)
                                     newRequiresList += newRequiresExpr
                             }

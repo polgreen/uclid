@@ -611,8 +611,8 @@ class ModuleInstantiatorPass(module : Module, inst : InstanceDecl, targetModule 
       if (!procOption.isEmpty) {
         modifiesInst = procOption.get.modifies.exists(
                           modifiable => modifiable match {
-                            case m : ModifiableId => false
-                            case m : ModifiableInstanceId => true
+                            case m@_ : ModifiableId => false
+                            case m@_ : ModifiableInstanceId => true
                           })
         modifiesInst = true
       }

@@ -44,9 +44,9 @@ import com.typesafe.scalalogging.Logger
 class PrimedVariableCollectorPass extends ReadOnlyPass[(Map[Identifier, Identifier])]
 {
   type T = Map[Identifier, Identifier]
-  def addToMap(id : Identifier, in : T, tag : String, ctx : Scope) : T = {
+  def addToMap(id : Identifier, in : T, tag : String) : T = {
     in.get(id) match {
-      case Some(idP) => in
+      case Some(_) => in
       case None =>
         val newId = NameProvider.get(id.toString + "_" + tag)
         val mapP = (in + (id -> newId))
@@ -56,7 +56,7 @@ class PrimedVariableCollectorPass extends ReadOnlyPass[(Map[Identifier, Identifi
   override def applyOnLHS(d : TraversalDirection.T, lhs : Lhs, in : T, context : Scope) : T = {
     if (d == TraversalDirection.Up) {
       lhs match {
-        case LhsNextId(id) => addToMap(id, in, "lhs", context)
+        case LhsNextId(id) => addToMap(id, in, "lhs")
         case _ => in
       }
     } else {
@@ -66,7 +66,7 @@ class PrimedVariableCollectorPass extends ReadOnlyPass[(Map[Identifier, Identifi
   override def applyOnHavoc(d : TraversalDirection.T, havocStmt : HavocStmt, in : T, context : Scope) : T = {
     if (d == TraversalDirection.Up) {
       havocStmt.havocable match {
-        case HavocableNextId(id) => addToMap(id, in, "havoc", context)
+        case HavocableNextId(id) => addToMap(id, in, "havoc")
         case _ => in
       }
     } else {
@@ -101,7 +101,7 @@ class PrimedVariableEliminatorPass extends RewritePass {
       (AssignStmt(List(LhsId(p._2)), List(p._1)))
     }).toList
   }
-  def getFinalAssigns(context : Scope) : List[AssignStmt] = {
+  def getFinalAssigns() : List[AssignStmt] = {
     val primeVarMap = primedVariableCollector.primeVarMap.get
     primeVarMap.map(p => (AssignStmt(List(LhsId(p._1)), List(p._2)))).toList
   }
@@ -135,7 +135,7 @@ class PrimedVariableEliminatorPass extends RewritePass {
   }
   override def rewriteNext(next : NextDecl, context : Scope) : Option[NextDecl] = {
     val primeDecls = getPrimeVarDecls(context)
-    val nextP = NextDecl(BlockStmt(primeDecls, getInitialAssigns() ++ List(next.body) ++ getFinalAssigns(context)))
+    val nextP = NextDecl(BlockStmt(primeDecls, getInitialAssigns() ++ List(next.body) ++ getFinalAssigns()))
     Some(nextP)
   }
   override def rewriteHavoc(havocStmt : HavocStmt, context : Scope) : Option[Statement] = {
@@ -168,7 +168,6 @@ class PrimedVariableEliminatorPass extends RewritePass {
     }
   }
   override def rewriteInstance(instD : InstanceDecl, context : Scope) : Option[InstanceDecl] = {
-    val modType = instD.modType.get
     val argsP = instD.arguments
     val instP = InstanceDecl(instD.instanceId, instD.moduleId, argsP, instD.instType, instD.modType)
     Some(instP)

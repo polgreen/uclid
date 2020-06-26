@@ -193,26 +193,26 @@ class AssertionTree {
     _verify(root, solver, VerifyModeAssert)
   }
 
-  def _printSMT(node : TreeNode, parentAssumptions : List[smt.Expr], label : Option[Identifier], solver : smt.SolverInterface) : List[String] = {
-    val allAssumptions = parentAssumptions ++ node.assumptions.toList
-    val filteredAssertions = (label match {
-      case None        => node.assertions
-      case Some(label) =>
-        node.assertions.filter{e => e.label == label.name}
-    }).toList
+  // def _printSMT(node : TreeNode, parentAssumptions : List[smt.Expr], label : Option[Identifier], solver : smt.SolverInterface) : List[String] = {
+  //   val allAssumptions = parentAssumptions ++ node.assumptions.toList
+  //   val filteredAssertions = (label match {
+  //     case None        => node.assertions
+  //     case Some(label) =>
+  //       node.assertions.filter{e => e.label == label.name}
+  //   }).toList
 
-    val theseSMTFormulas = filteredAssertions.map{
-      a => {
-        val name = label match {
-          case None => "uclid: [%s]; step %d".format(a.pos.toString, a.iter)
-          case Some(label) => "uclid(%s): [%s]; step %d".format(label, a.pos.toString, a.iter)
-        }
-        solver.toSMT2(smt.OperatorApplication(smt.ConjunctionOp, List(a.pathCond, a.expr)),
-                      allAssumptions, name)
-      }
-    }
-    val childResults = node.children.flatMap(c => _printSMT(c, allAssumptions, label, solver))
-    theseSMTFormulas ++ childResults
-  }
-  def printSMT(label : Option[Identifier], solver : smt.SolverInterface) = _printSMT(root, List.empty, label, solver)
+  //   val theseSMTFormulas = filteredAssertions.map{
+  //     a => {
+  //       val name = label match {
+  //         case None => "uclid: [%s]; step %d".format(a.pos.toString, a.iter)
+  //         case Some(label) => "uclid(%s): [%s]; step %d".format(label, a.pos.toString, a.iter)
+  //       }
+  //       solver.toSMT2(smt.OperatorApplication(smt.ConjunctionOp, List(a.pathCond, a.expr)),
+  //                     allAssumptions, name)
+  //     }
+  //   }
+  //   val childResults = node.children.flatMap(c => _printSMT(c, allAssumptions, label, solver))
+  //   theseSMTFormulas ++ childResults
+  // }
+  // def printSMT(label : Option[Identifier], solver : smt.SolverInterface) = _printSMT(root, List.empty, label, solver)
 }

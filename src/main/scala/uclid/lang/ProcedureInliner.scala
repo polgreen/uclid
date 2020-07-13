@@ -231,8 +231,8 @@ trait NewProcedureInlinerPass extends RewritePass {
  */
   override def rewriteModule(module : Module, ctx : Scope) : Option[Module] = {
     val instProcMap = module.procedures.foldLeft(Map.empty[List[Identifier], ProcedureDecl])((acc, proc) => acc + (List(module.id, proc.id) -> proc))
-    val moduleP = module.withReplacedAnnotation[InstanceProcMapAnnotation](InstanceProcMapAnnotation(instProcMap))
-    Some(moduleP)
+    // val moduleP = module.withReplacedAnnotation[InstanceProcMapAnnotation](InstanceProcMapAnnotation(instProcMap))
+    Some(module.withReplacedAnnotation[InstanceProcMapAnnotation](InstanceProcMapAnnotation(instProcMap)))
   }
 }
 

@@ -15,8 +15,8 @@ class RewriteFreshLiteralsPass extends RewritePass {
       case None =>
         module.decls
     }
-    val moduleP = Module(module.id, declsP, module.cmds, module.notes)
-    Some(moduleP)
+    // val moduleP = Module(module.id, declsP, module.cmds, module.notes)
+    Some(module.copy(decls=declsP))
   }
   override def rewriteFreshLit(f : FreshLit, context : Scope) : Option[Expr] = {
     freshLit match {

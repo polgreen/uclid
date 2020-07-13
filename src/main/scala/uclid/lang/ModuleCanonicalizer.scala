@@ -50,10 +50,10 @@ class ModuleCanonicalizerPass extends RewritePass {
       case None => Some(NextDecl(SkipStmt()))
       case Some(_) => None
     }
-    val newDecls = moduleIn.decls ++ List(initP, nextP).flatten
+    // val newDecls = moduleIn.decls ++ List(initP, nextP).flatten
     // FIXME: sort the declarations in the module.
-    val modP = Module(moduleIn.id, newDecls, moduleIn.cmds, moduleIn.notes)
-    Some(modP)
+    // val modP = Module(moduleIn.id, newDecls, moduleIn.cmds, moduleIn.notes)
+    Some(moduleIn.copy(decls = moduleIn.decls ++ List(initP, nextP).flatten))
   }
 }
 

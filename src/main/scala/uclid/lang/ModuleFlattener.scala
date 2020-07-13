@@ -377,9 +377,9 @@ class ModuleInstantiatorPass(module : Module, inst : InstanceDecl, targetModule 
   // add new variables and inputs.
   override def rewriteModule(module : Module, context : Scope) : Option[Module] = {
     logger.debug("axioms:\n{}", newAxioms.map("  " + _.toString()))
-    val declsP : List[Decl] = newVariables ++ newInputs ++ newAxioms ++ module.decls
-    val moduleP = Module(module.id, declsP, module.cmds, module.notes)
-    Some(moduleP)
+    // val declsP : List[Decl] = newVariables ++ newInputs ++ newAxioms ++ module.decls
+    // val moduleP = module.copy(decls = newVariables ++ newInputs ++ newAxioms ++ module.decls)
+    Some(module.copy(decls = newVariables ++ newInputs ++ newAxioms ++ module.decls))
   }
 
   // rewrite module.

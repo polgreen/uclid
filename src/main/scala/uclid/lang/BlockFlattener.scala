@@ -78,9 +78,10 @@ class BlockVariableRenamerPass extends RewritePass {
     val sigP = ProcedureSig(inParamsP, outParamsP)
     val requiresP = proc.requires.map(req => rewriter.rewriteExpr(req, context))
     val ensuresP = proc.ensures.map(ens => rewriter.rewriteExpr(ens, context))
-    val bodyP = rewriter.rewriteStatement(proc.body, contextP).get
-    val procP = ProcedureDecl(proc.id, sigP, bodyP, requiresP, ensuresP, proc.modifies, proc.annotations)
-    Some(procP)
+    // val bodyP = rewriter.rewriteStatement(proc.body, contextP).get
+
+    // val procP = ProcedureDecl(proc.id, sigP, bodyP, requiresP, ensuresP, proc.modifies, proc.annotations)
+    Some(proc.copy(sig=sigP, body=rewriter.rewriteStatement(proc.body, contextP).get, requires=requiresP, ensures=ensuresP))
   }
   override def rewriteFunction(func : FunctionDecl, context : Scope) : Option[FunctionDecl] = {
     val varTuples = renameVarList(func.sig.args, context)

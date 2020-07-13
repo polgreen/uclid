@@ -72,10 +72,10 @@ class InstanceModuleTypeRewriterPass extends RewritePass {
   override def rewriteInstance(instD : InstanceDecl, context : Scope) : Option[InstanceDecl] = {
     val modOption = context.moduleDefinitionMap.get(instD.moduleId)
     Utils.assert(modOption.isDefined, "Unknown modules must have been detected by now: " + instD.toString)
-    val mod = modOption.get
-    val modType = mod.moduleType
-    val instDP = InstanceDecl(instD.instanceId, instD.moduleId, instD.arguments, instD.instType, Some(modType))
-    Some(instDP)
+    // val mod = modOption.get
+    // val modType = mod.moduleType
+    // val instDP = InstanceDecl(instD.instanceId, instD.moduleId, instD.arguments, instD.instType, Some(modType))
+    Some(instD.copy(modType=Some(modOption.get.moduleType)))
   }
 }
 

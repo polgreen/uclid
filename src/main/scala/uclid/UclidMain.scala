@@ -186,52 +186,98 @@ object UclidMain {
 
   def createCompilePassManager(test: Boolean, mainModuleName: lang.Identifier) = {
     val passManager = new PassManager("compile")
+    // adds init and next to every module
     passManager.addPass(new ModuleCanonicalizer())
+    // introduces LTL operators (which were parsed as function applications)
+    // ? should these have been parsed as operators originally?
     passManager.addPass(new LTLOperatorIntroducer())
+    // imports types into module
     passManager.addPass(new ModuleTypesImportCollector())
+    // imports defines
     passManager.addPass(new ModuleDefinesImportCollector())
+    // imports constants
     passManager.addPass(new ModuleConstantsImportRewriter())
+    // imports uninterpreted functions
     passManager.addPass(new ModuleFunctionsImportRewriter())
+    // collects external types to the current module (e.g., module.mytype)
     passManager.addPass(new ExternalTypeAnalysis())
+    // replaces module.mytype with external type 
     passManager.addPass(new ExternalTypeRewriter())
+    // turns some specific functions e.g., bv_left_shift into operator applications
     passManager.addPass(new FuncExprRewriter())
+    // checks instance module names exist
     passManager.addPass(new InstanceModuleNameChecker())
+    // gives types to the instances
     passManager.addPass(new InstanceModuleTypeRewriter())
+    // Replace a.b with the appropriate external identifier
     passManager.addPass(new RewritePolymorphicSelect())
+    // Replaces constant lits with actual literal value
     passManager.addPass(new ConstantLitRewriter())
+    // finds uses of type defs
     passManager.addPass(new TypeSynonymFinder())
+    // rewrites the type defs to be original type
     passManager.addPass(new TypeSynonymRewriter())
+    // renames local variables to blocks so that they don't clash?
     passManager.addPass(new BlockVariableRenamer())
+    // compute the width of bitvector slice operations.
     passManager.addPass(new BitVectorSliceFindWidth())
+    // the big type checker 
+    // ? should other type checking be moved into here
     passManager.addPass(new ExpressionTypeChecker())
+    // not sure why not done if run in test mode
+    // test flag is default false
+    // checks if prime/old/history are used in the incorrect places
     if (!test) passManager.addPass(new VerificationExpressionChecker())
+    // rewrites bitvector operators (except slice) to have a width and returns a "reified" operator
+    // runs expression type checker pass again ? is this necessary
+    // then replaces operators with operators from the polyOpMap
+    // ? should we come up wiht a way to pass information between passes 
     passManager.addPass(new PolymorphicTypeRewriter())
+    // check for recursive dependencies ??
     passManager.addPass(new FindProcedureDependency())
+    // check for recursive defines?
     passManager.addPass(new DefDepGraphChecker())
+    // expands macros
     passManager.addPass(new RewriteDefines())
+    // type checker for module specific things e.g., module declarations
     passManager.addPass(new ModuleTypeChecker())
+    // checks for incorrect assignments to next state vars
     passManager.addPass(new PrimedAssignmentChecker())
+    // looks for semantic errors e.g., redeclarations
     passManager.addPass(new SemanticAnalyzer())
+//      ProcedureChecker
+//  *  If a procedure has pre/post conditions
+//  *    - it should not write to a variable that has not been declared modified.
+//  *    - only state variables should be declared modifiable
     passManager.addPass(new ProcedureChecker())
+    // checks arguments of control commands and types etc
     passManager.addPass(new ControlCommandChecker())
+    // types of each argument in a module instantiation
     passManager.addPass(new ComputeInstanceTypes())
+    // checks module instancs are instantiated correctly
     passManager.addPass(new ModuleInstanceChecker())
+    // 
     passManager.addPass(new CaseEliminator())
     passManager.addPass(new ForLoopUnroller())
+    // ? hyperproperties for procedures
     passManager.addPass(new ModularProductProgram())
     passManager.addPass(new WhileLoopRewriter())
     passManager.addPass(new BitVectorSliceConstify())
     passManager.addPass(new VariableDependencyFinder())
     passManager.addPass(new StatementScheduler())
     passManager.addPass(new BlockFlattener())
+
     passManager.addPass(new NewInternalProcedureInliner())
+    // self explanatory
     passManager.addPass(new PrimedVariableCollector())
     passManager.addPass(new PrimedVariableEliminator())
     passManager.addPass(new PrimedHistoryRewriter())
     passManager.addPass(new IntroduceFreshHavocs())
     passManager.addPass(new RewriteFreshLiterals())
+    // why do we need to call this multiple times? It also calls redundantassignmenteliminator
     passManager.addPass(new BlockFlattener())
     passManager.addPass(new ModuleCleaner())
+    // why do we need to call this multiple times?
     passManager.addPass(new BlockVariableRenamer())
     passManager
   }  
@@ -279,19 +325,30 @@ object UclidMain {
     passManager.addPass(new ModuleDependencyFinder(mainModuleName))
     passManager.addPass(new StatelessAxiomFinder(mainModuleName))
     passManager.addPass(new StatelessAxiomImporter(mainModuleName))
+    // why is this only neeed all the way down here?
     passManager.addPass(new ExternalSymbolAnalysis())
+    // pranav can talk about this one
     passManager.addPass(new ProcedureModifiesRewriter())
+    // flattens modules into main
     passManager.addPass(new ModuleFlattener(mainModuleName))
+    // gets rid of modules apart from main
     passManager.addPass(new ModuleEliminator(mainModuleName))
     passManager.addPass(new LTLOperatorRewriter())
     passManager.addPass(new LTLPropertyRewriter())
     passManager.addPass(new Optimizer())
+    // we've done this already
     passManager.addPass(new ModuleCleaner())
+     // we've done this already
     passManager.addPass(new Optimizer())
+    // we've done this once already
     passManager.addPass(new BlockVariableRenamer())
+    // and this one
     passManager.addPass(new ExpressionTypeChecker())
+    // and this one
     passManager.addPass(new ModuleTypeChecker())
+    // and this one
     passManager.addPass(new SemanticAnalyzer())
+    // these need fixing and are buggy
     if (config.enumToNumeric) passManager.addPass(new EnumTypeAnalysis())
     if (config.enumToNumeric) passManager.addPass(new EnumTypeRenamer("BV"))
     if (config.enumToNumeric) passManager.addPass(new EnumTypeRenamerCons("BV"))

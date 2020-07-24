@@ -272,6 +272,9 @@ class SMTLIB2Spec extends FlatSpec {
   "test-block-var.ucl" should "verify all but 2 assertions" in {
     SMTLIB2Spec.expectedFails("./test/test-block-var.ucl", 2)
   }
+  // "test-k-induction-cex.ucl" should "verify all but 2 assertions" in {
+  //   SMTLIB2Spec.expectedFails("./test/test-block-var.ucl", 2)
+  // }
   "test-distinct-op.ucl" should "verify successfully." in {
     SMTLIB2Spec.expectedFails("./test/test-distinct-op.ucl", 0)
   }

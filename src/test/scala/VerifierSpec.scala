@@ -281,6 +281,9 @@ class ProcedureVerifSpec extends FlatSpec {
   "test-block-var.ucl" should "fail to verify 2 assertions" in {
     VerifierSpec.expectedFails("./test/test-block-var.ucl", 2)
   }
+  "test-k-induction-cex.ucl" should "verify all but 2 assertions" in {
+    SMTLIB2Spec.expectedFails("./test/test-block-var.ucl", 2)
+  }
   "test-distinct-op.ucl" should "verify successfully." in {
     VerifierSpec.expectedFails("./test/test-distinct-op.ucl", 0)
   }

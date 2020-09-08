@@ -89,7 +89,7 @@ class FindProcedureDependency extends ASTAnalyzer("FindProcedureDependency", new
   }
 }
 
-trait NewProcedureInlinerPass extends RewritePass {
+class NewProcedureInlinerPass extends RewritePass {
    
   /* 
    * Inlines a procedure call statement.
@@ -234,10 +234,6 @@ trait NewProcedureInlinerPass extends RewritePass {
     val moduleP = module.withReplacedAnnotation[InstanceProcMapAnnotation](InstanceProcMapAnnotation(instProcMap))
     Some(moduleP)
   }
-}
-
-class NewInternalProcedureInlinerPass extends NewProcedureInlinerPass() {
-
   /* 
    * Rewrite specific procedure call statements as an inlined statement.
    * Note that we only inline calls that do not modify instances or must
@@ -283,6 +279,6 @@ class NewInternalProcedureInlinerPass extends NewProcedureInlinerPass() {
   }
 }
 
-class NewInternalProcedureInliner() extends ASTRewriter("InternalProcedureInliner", new NewInternalProcedureInlinerPass()) {
+class NewInternalProcedureInliner() extends ASTRewriter("InternalProcedureInliner", new NewProcedureInlinerPass()) {
   override val repeatUntilNoChange = true
 }

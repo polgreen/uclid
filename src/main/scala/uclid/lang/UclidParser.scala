@@ -257,7 +257,7 @@ object UclidParser extends UclidTokenParsers with PackratParsers {
       positioned { ("[" ~> Expr ~ ":" ~ Expr <~ "]") ^^ { case x ~ ":" ~ y => lang.VarExtractOp(lang.VarBitVectorSlice(x, y)) } }
     lazy val ExtractOp : Parser[lang.ExtractOp] = positioned { ConstExtractOp | VarExtractOp }
     lazy val Id: PackratParser[Identifier] = positioned { ident ^^ {case i => Identifier(i)} }
-    lazy val RecordElementId: PackratParser[Identifier] = positioned { ident ^^ {case i => Identifier("rec_"+i)} }
+    lazy val RecordElementId: PackratParser[Identifier] = positioned { ident ^^ {case i => Identifier("__UCLID_sel_"+i)} }
     /* BEGIN Literals. */
     lazy val Bool: PackratParser[BoolLit] =
       positioned { "false" ^^ { _ => BoolLit(false) } | "true" ^^ { _ => BoolLit(true) } }

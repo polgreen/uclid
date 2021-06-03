@@ -1,0 +1,46 @@
+module main {
+    var x : integer;
+    var b : boolean;
+
+    init {
+        b = true;
+        x = 0;
+    }
+
+    next {
+        b' = !b;
+        if (b) {
+            x' = x + 3;
+        } else {
+            x' = x - 2;
+        }
+    }
+
+    invariant x_ge_0: x >= 0;
+
+// more complicated
+    // control {
+    //     for(i=0; i<=10; i++)
+    //     {
+    //       res = induction(i);
+    //       check;
+    //       if(res!=FAIL || i==10)
+    //       {
+    //         print_results;
+    //         break;
+    //       }
+    //     }
+    // }
+
+// simpler: just an if statement
+    control {
+        res = induction; // try plain induction
+        check;
+        if(res==FAIL)
+        {
+          res = induction(2); // do k induction with 2 steps
+          check;
+        }
+        print_results;
+    }
+}

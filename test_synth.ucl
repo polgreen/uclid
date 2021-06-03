@@ -1,0 +1,48 @@
+module main {
+  var x : integer;
+  var isInitialised : boolean;
+
+  synthesis function mySynthFun (x : integer) : boolean;
+
+  procedure [noinline] foo()
+  requires mySynthFun(x); 
+  // requires true;
+  ensures true;
+  modifies x;
+  {
+  	// this procedure needs x to be 0 
+    assert(x==0);
+  }
+
+  procedure [noinline] initialise()
+  requires true;
+  // ensures true;
+  ensures mySynthFun(x);
+  // ensures x==0;
+  modifies x;
+  {
+  	x=0;
+  }
+
+  init{
+  	call initialise();
+  	call foo();
+  }
+  next{
+  	// do some other stuff
+  }
+
+  invariant checkInitialisation: (! isInitialised ) ||  x==0;
+
+  control
+  {
+    verify(initialise);
+    verify(foo);
+  	check;
+    res = getsynthresult; // need some syntax to get the result from the synthesis back end
+    replace(mySynthFun(x) <- res); // need some syntax that says "replace A with B"
+    v = unroll(0);
+    check;
+  	print_results;
+  }
+}

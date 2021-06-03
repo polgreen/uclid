@@ -1,0 +1,41 @@
+module main {
+  var x : integer;
+  var y : integer;
+  var z : integer;
+
+  procedure foo()
+  requires true;
+  ensures z>0;
+  modifies z;
+  {
+    var w;
+    z = mySynthFun(w);
+    if(z==0)
+      z = 1;
+  }
+
+
+  synthesis function mySynthFun (x : integer) : integer
+
+  init{
+    y = mySynthFun(x); // function should be abs(x)
+    z = 0;
+  }
+  next{
+  	z' = y;
+  }
+
+  invariant z_is_positive: z>=0;
+
+  control
+  {
+  	v = unroll(0); // use BMC to get the synth fun
+  	check;
+  	print_results;
+    // then use the body of the synth fun to verify procedure foo
+    verify(foo);
+    check;
+    print_results;
+
+  }
+}

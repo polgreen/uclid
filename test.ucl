@@ -1,0 +1,50 @@
+module main {
+  var x : integer;
+  var isInitialised : boolean;
+  macro STUFF : x
+
+  //synthesis function mySynthFun (x : integer) : integer
+
+  procedure [noinline] foo()
+  //requires mySynthFun(x); 
+  ensures true;
+  modifies STUFF;
+  {
+  	// this procedure needs x to be 0 
+  	assert(x==0);
+  }
+
+  procedure [noinline] initialise()
+  requires true;
+  ensures true;
+ // ensures mySynthFun(x);
+  modifies x;
+  {
+  	x=0;
+  }
+
+  init{
+  	call initialise();
+  	call foo();
+  }
+  next{
+  	// do some other stuff
+  }
+
+  invariant checkInitialisation: (! isInitialised ) ||  x==0;
+
+  control
+  {
+  	v = unroll(0); // use BMC to check the first step
+  	check;
+  	if(result == FAIL)
+  	{
+  		STUFF="some other stuff";
+  		v = unroll(0);
+  		check;
+  		print_results;
+  	}
+
+  	print_results;
+  }
+}

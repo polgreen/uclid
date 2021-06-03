@@ -1,0 +1,28 @@
+// Copyright (c) 2020 ALES S.r.l.
+//
+// This file is subject to the terms and conditions defined in the
+// dedicated license file in the root of this source code package.
+//  
+// EU Export Controlled - NSR
+//  
+//  - Author : Loris Dal Lago (loris.dallago@rtx.com)
+//
+
+module test {
+  var a : bv1;
+
+  init {
+    a = 0bv1;
+  }
+  next {
+  }
+
+  property[LTL] simpleX : G(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(X(0bv1==a))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+
+  control {
+    vobj_ltl = bmc(2);
+    check;
+    print_results;
+    vobj_ltl.print_cex(a);
+  }
+}

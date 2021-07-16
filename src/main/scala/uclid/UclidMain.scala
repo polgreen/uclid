@@ -229,6 +229,7 @@ object UclidMain {
     // Replaces constant lits with actual literal value
     passManager.addPass(new ConstantLitRewriter())
     // inlines statement macros
+    passManager.addPass(new MacroAnnotator())
     passManager.addPass(new MacroRewriter())
     // finds uses of type defs
     passManager.addPass(new TypeSynonymFinder())
